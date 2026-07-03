@@ -1,0 +1,2 @@
+# Carpeta reservada para almacenar reportes analíticos generados como metrics_report.json
+# Coloque el reporte de métricas .json descargado de su entorno Colab en esta carpeta.

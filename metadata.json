@@ -1,0 +1,6 @@
+{
+  "name": "SIA-T - Alerta Temprana",
+  "description": "Sistema Inteligente de Alerta Temprana para la prevención de la deserción escolar basado en Machine Learning",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
