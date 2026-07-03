@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, UserPlus, Filter, Sparkles, BookOpen, AlertTriangle } from "lucide-react";
 
 export default function EstudiantesPage() {
@@ -8,13 +8,27 @@ export default function EstudiantesPage() {
   const [filtroGrado, setFiltroGrado] = useState("");
   const [filtroRiesgo, setFiltroRiesgo] = useState("");
   
-  const [estudiantes, setEstudiantes] = useState([
-    { id: 1, codigo_anonimizado: "A001", nombres: "María Fernanda", apellidos: "López", grado: "3° Secundaria", seccion: "A", nivel_educativo: "secundaria", inasistencias: 2, estado_pension: "al_dia", nota_final: 10.1, ultima_prediccion: { probabilidad: 0.82, nivel: "Riesgo alto" } },
-    { id: 2, codigo_anonimizado: "A002", nombres: "Juan Diego", apellidos: "Martínez", grado: "2° Secundaria", seccion: "B", nivel_educativo: "secundaria", inasistencias: 4, estado_pension: "atraso_leve", nota_final: 10.6, ultima_prediccion: { probabilidad: 0.68, nivel: "Riesgo medio" } },
-    { id: 3, codigo_anonimizado: "A003", nombres: "Ana Sofía", apellidos: "Vargas", grado: "1° Secundaria", seccion: "A", nivel_educativo: "secundaria", inasistencias: 6, estado_pension: "al_dia", nota_final: 12.1, ultima_prediccion: { probabilidad: 0.35, nivel: "Riesgo bajo" } },
-    { id: 4, codigo_anonimizado: "A004", nombres: "Luis Antonio", apellidos: "Pérez", grado: "3° Secundaria", seccion: "C", nivel_educativo: "secundaria", inasistencias: 1, estado_pension: "deuda", nota_final: 12.0, ultima_prediccion: { probabilidad: 0.42, nivel: "Riesgo bajo" } },
-    { id: 5, codigo_anonimizado: "A005", nombres: "Camila Torres", apellidos: "Ruiz", grado: "2° Secundaria", seccion: "A", nivel_educativo: "secundaria", inasistencias: 0, estado_pension: "al_dia", nota_final: 16.1, ultima_prediccion: { probabilidad: 0.05, nivel: "Sin riesgo" } }
-  ]);
+  // 1. Iniciamos los estados completamente vacíos para recibir los reales
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  // 2. Traemos a los estudiantes reales desde la API
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      try {
+        const respuesta = await fetch("https://proyecto-siat.onrender.com/api/estudiantes");
+        if (respuesta.ok) {
+          const datosReales = await respuesta.json();
+          setEstudiantes(datosReales);
+        }
+      } catch (error) {
+        console.error("Error al traer estudiantes:", error);
+      } finally {
+        setCargando(false);
+      }
+    };
+    obtenerDatos();
+  }, []);
 
   // Formulario para registrar un estudiante con predicción automática simulada
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -106,9 +120,18 @@ export default function EstudiantesPage() {
   const estudiantesFiltrados = estudiantes.filter(est => {
     const cumpleBusqueda = `${est.nombres} ${est.apellidos}`.toLowerCase().includes(buscar.toLowerCase()) || est.codigo_anonimizado.toLowerCase().includes(buscar.toLowerCase());
     const cumpleGrado = filtroGrado ? est.grado === filtroGrado : true;
-    const cumpleRiesgo = filtroRiesgo ? est.ultima_prediccion.nivel === filtroRiesgo : true;
+    const cumpleRiesgo = filtroRiesgo ? est.ultima_prediccion?.nivel === filtroRiesgo : true;
     return cumpleBusqueda && cumpleGrado && cumpleRiesgo;
   });
+
+  // 3. Mostramos indicador de carga mientras llega la respuesta del servidor
+  if (cargando) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center text-slate-500 font-medium">
+        Cargando lista de estudiantes desde la base de datos...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -183,28 +206,29 @@ export default function EstudiantesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {estudiantesFiltrados.map((est) => {
+                const nivelRiesgo = est.ultima_prediccion?.nivel || "Sin riesgo";
                 const badgeColor = {
                   "Riesgo alto": "bg-red-50 text-red-600 border-red-100",
                   "Riesgo medio": "bg-amber-50 text-amber-600 border-amber-100",
                   "Riesgo bajo": "bg-blue-50 text-blue-600 border-blue-100",
                   "Sin riesgo": "bg-emerald-50 text-emerald-600 border-emerald-100"
-                }[est.ultima_prediccion.nivel];
+                }[nivelRiesgo] || "bg-slate-50 text-slate-600 border-slate-100";
 
                 return (
                   <tr key={est.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 flex items-center space-x-3">
                       <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shadow-inner">
-                        {est.nombres[0]}{est.apellidos[0]}
+                        {est.nombres ? est.nombres[0] : ""}{est.apellidos ? est.apellidos[0] : ""}
                       </div>
                       <div>
                         <p className="font-bold text-slate-800">{est.nombres} {est.apellidos}</p>
                         <p className="text-[10px] text-slate-400 font-semibold">Código: {est.codigo_anonimizado}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 font-semibold">{est.grado} - Secc. "{est.seccion}"</td>
+                    <td className="px-6 py-4 text-slate-600 font-semibold">{est.grado} - Secc. "{est.seccion || 'A'}"</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}`}>
-                        {est.ultima_prediccion.nivel}
+                        {nivelRiesgo}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -224,7 +248,7 @@ export default function EstudiantesPage() {
                             ? "bg-amber-50 text-amber-700"
                             : "bg-red-50 text-red-700"
                       }`}>
-                        {est.estado_pension.toUpperCase().replace("_", " ")}
+                        {(est.estado_pension || "al_dia").toUpperCase().replace("_", " ")}
                       </span>
                     </td>
                   </tr>
