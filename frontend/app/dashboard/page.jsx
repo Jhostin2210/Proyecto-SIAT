@@ -15,7 +15,7 @@ export default function DashboardPage() {
         // Hacemos la petición a tu backend. 
         // Nota: Asegúrate de que '/estudiantes' sea la ruta correcta en tu FastAPI. 
         // Si usaste algo como '/api/estudiantes', agrégalo aquí.
-        const respuesta = await fetch("https://proyecto-siat.onrender.com/estudiantes");
+        const respuesta = await fetch("https://proyecto-siat.onrender.com/api/estudiantes");
         
         if (respuesta.ok) {
           const datosReales = await respuesta.json();
