@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-medium text-slate-500">Periodo Lectivo Activo</p>
-              <p className="text-sm font-bold text-slate-800">2024 - II</p>
+              <p className="text-sm font-bold text-slate-800">2025 - IV</p>
             </div>
             <div className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full cursor-pointer transition-colors">
               <Bell className="w-5 h-5" />
