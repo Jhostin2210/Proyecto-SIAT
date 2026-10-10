@@ -14,3 +14,6 @@ __pycache__/
 
 # Base de datos local de pruebas
 *.db
+
+# Datos reales y claves de anonimización: nunca se suben
+backend/data/privado/

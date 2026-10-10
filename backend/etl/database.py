@@ -21,7 +21,8 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 # podemos soportar opcionalmente SQLite en memoria como fallback automático.
 # Así, el código ETL y el backend pueden ser probados y compilados de forma segura.
 if os.getenv("USE_SQLITE_FALLBACK", "true").lower() == "true":
-    DATABASE_URL = "sqlite:///./sia_t_local.db"
+    # SQLITE_PATH permite usar otro archivo, por ejemplo para una base local con datos reales.
+    DATABASE_URL = "sqlite:///" + os.getenv("SQLITE_PATH", "./sia_t_local.db")
     # SQLite requiere parámetros adicionales para el manejo de hilos concurrentes
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:

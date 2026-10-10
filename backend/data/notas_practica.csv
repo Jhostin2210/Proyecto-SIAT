@@ -1,0 +1,793 @@
+codigo,grado,nivel,curso,periodo,componente,nota
+P-0001,3° Primaria,primaria,Álgebra,2025-11,libro,18
+P-0001,3° Primaria,primaria,Álgebra,2025-11,cuaderno,18
+P-0001,3° Primaria,primaria,Álgebra,2025-11,conducta,19
+P-0001,3° Primaria,primaria,Álgebra,2025-11,examen,11
+P-0001,3° Primaria,primaria,Geometría,2025-11,libro,15
+P-0001,3° Primaria,primaria,Geometría,2025-11,cuaderno,17
+P-0001,3° Primaria,primaria,Geometría,2025-11,conducta,18
+P-0001,3° Primaria,primaria,Geometría,2025-11,examen,11
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,17
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-11,conducta,17
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-11,examen,16
+P-0001,3° Primaria,primaria,Álgebra,2025-12,libro,18
+P-0001,3° Primaria,primaria,Álgebra,2025-12,cuaderno,16
+P-0001,3° Primaria,primaria,Álgebra,2025-12,conducta,18
+P-0001,3° Primaria,primaria,Álgebra,2025-12,examen,14
+P-0001,3° Primaria,primaria,Geometría,2025-12,libro,20
+P-0001,3° Primaria,primaria,Geometría,2025-12,cuaderno,20
+P-0001,3° Primaria,primaria,Geometría,2025-12,conducta,18
+P-0001,3° Primaria,primaria,Geometría,2025-12,examen,19
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-12,libro,19
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,19
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-12,conducta,18
+P-0001,3° Primaria,primaria,Razonamiento matemático,2025-12,examen,15
+P-0002,3° Primaria,primaria,Álgebra,2025-11,libro,11
+P-0002,3° Primaria,primaria,Álgebra,2025-11,cuaderno,11
+P-0002,3° Primaria,primaria,Álgebra,2025-11,conducta,11
+P-0002,3° Primaria,primaria,Álgebra,2025-11,examen,7
+P-0002,3° Primaria,primaria,Geometría,2025-11,libro,11
+P-0002,3° Primaria,primaria,Geometría,2025-11,cuaderno,11
+P-0002,3° Primaria,primaria,Geometría,2025-11,conducta,13
+P-0002,3° Primaria,primaria,Geometría,2025-11,examen,12
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-11,libro,10
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,9
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-11,conducta,12
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-11,examen,9
+P-0002,3° Primaria,primaria,Álgebra,2025-12,libro,14
+P-0002,3° Primaria,primaria,Álgebra,2025-12,cuaderno,12
+P-0002,3° Primaria,primaria,Álgebra,2025-12,conducta,13
+P-0002,3° Primaria,primaria,Álgebra,2025-12,examen,10
+P-0002,3° Primaria,primaria,Geometría,2025-12,libro,13
+P-0002,3° Primaria,primaria,Geometría,2025-12,cuaderno,14
+P-0002,3° Primaria,primaria,Geometría,2025-12,conducta,13
+P-0002,3° Primaria,primaria,Geometría,2025-12,examen,11
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-12,libro,11
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,11
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-12,conducta,11
+P-0002,3° Primaria,primaria,Razonamiento matemático,2025-12,examen,10
+P-0003,3° Primaria,primaria,Álgebra,2025-11,libro,17
+P-0003,3° Primaria,primaria,Álgebra,2025-11,cuaderno,18
+P-0003,3° Primaria,primaria,Álgebra,2025-11,conducta,16
+P-0003,3° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0003,3° Primaria,primaria,Geometría,2025-11,libro,17
+P-0003,3° Primaria,primaria,Geometría,2025-11,cuaderno,20
+P-0003,3° Primaria,primaria,Geometría,2025-11,conducta,17
+P-0003,3° Primaria,primaria,Geometría,2025-11,examen,15
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-11,libro,18
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,18
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-11,conducta,20
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-11,examen,20
+P-0003,3° Primaria,primaria,Álgebra,2025-12,libro,17
+P-0003,3° Primaria,primaria,Álgebra,2025-12,cuaderno,17
+P-0003,3° Primaria,primaria,Álgebra,2025-12,conducta,17
+P-0003,3° Primaria,primaria,Álgebra,2025-12,examen,15
+P-0003,3° Primaria,primaria,Geometría,2025-12,libro,18
+P-0003,3° Primaria,primaria,Geometría,2025-12,cuaderno,16
+P-0003,3° Primaria,primaria,Geometría,2025-12,conducta,18
+P-0003,3° Primaria,primaria,Geometría,2025-12,examen,18
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-12,libro,14
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,15
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-12,conducta,17
+P-0003,3° Primaria,primaria,Razonamiento matemático,2025-12,examen,12
+P-0004,3° Primaria,primaria,Álgebra,2025-11,libro,16
+P-0004,3° Primaria,primaria,Álgebra,2025-11,cuaderno,14
+P-0004,3° Primaria,primaria,Álgebra,2025-11,conducta,18
+P-0004,3° Primaria,primaria,Álgebra,2025-11,examen,19
+P-0004,3° Primaria,primaria,Geometría,2025-11,libro,16
+P-0004,3° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0004,3° Primaria,primaria,Geometría,2025-11,conducta,16
+P-0004,3° Primaria,primaria,Geometría,2025-11,examen,17
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-11,libro,19
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,17
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-11,conducta,19
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-11,examen,15
+P-0004,3° Primaria,primaria,Álgebra,2025-12,libro,14
+P-0004,3° Primaria,primaria,Álgebra,2025-12,cuaderno,15
+P-0004,3° Primaria,primaria,Álgebra,2025-12,conducta,18
+P-0004,3° Primaria,primaria,Álgebra,2025-12,examen,16
+P-0004,3° Primaria,primaria,Geometría,2025-12,libro,18
+P-0004,3° Primaria,primaria,Geometría,2025-12,cuaderno,17
+P-0004,3° Primaria,primaria,Geometría,2025-12,conducta,14
+P-0004,3° Primaria,primaria,Geometría,2025-12,examen,12
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-12,libro,16
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,16
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-12,conducta,14
+P-0004,3° Primaria,primaria,Razonamiento matemático,2025-12,examen,11
+P-0005,3° Primaria,primaria,Álgebra,2025-11,libro,19
+P-0005,3° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0005,3° Primaria,primaria,Álgebra,2025-11,conducta,17
+P-0005,3° Primaria,primaria,Álgebra,2025-11,examen,18
+P-0005,3° Primaria,primaria,Geometría,2025-11,libro,19
+P-0005,3° Primaria,primaria,Geometría,2025-11,cuaderno,19
+P-0005,3° Primaria,primaria,Geometría,2025-11,conducta,19
+P-0005,3° Primaria,primaria,Geometría,2025-11,examen,13
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-11,libro,18
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,17
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-11,conducta,20
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-11,examen,15
+P-0005,3° Primaria,primaria,Álgebra,2025-12,libro,19
+P-0005,3° Primaria,primaria,Álgebra,2025-12,cuaderno,18
+P-0005,3° Primaria,primaria,Álgebra,2025-12,conducta,18
+P-0005,3° Primaria,primaria,Álgebra,2025-12,examen,15
+P-0005,3° Primaria,primaria,Geometría,2025-12,libro,19
+P-0005,3° Primaria,primaria,Geometría,2025-12,cuaderno,18
+P-0005,3° Primaria,primaria,Geometría,2025-12,conducta,17
+P-0005,3° Primaria,primaria,Geometría,2025-12,examen,13
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-12,libro,18
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,19
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-12,conducta,20
+P-0005,3° Primaria,primaria,Razonamiento matemático,2025-12,examen,20
+P-0006,4° Primaria,primaria,Aritmética,2025-11,libro,11
+P-0006,4° Primaria,primaria,Aritmética,2025-11,cuaderno,10
+P-0006,4° Primaria,primaria,Aritmética,2025-11,conducta,13
+P-0006,4° Primaria,primaria,Aritmética,2025-11,examen,9
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,11
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,12
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,12
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,9
+P-0006,4° Primaria,primaria,Álgebra,2025-11,libro,10
+P-0006,4° Primaria,primaria,Álgebra,2025-11,cuaderno,9
+P-0006,4° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,15
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,13
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,9
+P-0006,4° Primaria,primaria,Geometría,2025-11,libro,11
+P-0006,4° Primaria,primaria,Geometría,2025-11,cuaderno,8
+P-0006,4° Primaria,primaria,Geometría,2025-11,examen,8
+P-0006,4° Primaria,primaria,Aritmética,2025-12,libro,14
+P-0006,4° Primaria,primaria,Aritmética,2025-12,cuaderno,11
+P-0006,4° Primaria,primaria,Aritmética,2025-12,conducta,13
+P-0006,4° Primaria,primaria,Aritmética,2025-12,examen,9
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,11
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,13
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,12
+P-0006,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,12
+P-0006,4° Primaria,primaria,Álgebra,2025-12,libro,11
+P-0006,4° Primaria,primaria,Álgebra,2025-12,cuaderno,11
+P-0006,4° Primaria,primaria,Álgebra,2025-12,examen,10
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,11
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,12
+P-0006,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,5
+P-0006,4° Primaria,primaria,Geometría,2025-12,libro,10
+P-0006,4° Primaria,primaria,Geometría,2025-12,cuaderno,13
+P-0006,4° Primaria,primaria,Geometría,2025-12,examen,16
+P-0007,4° Primaria,primaria,Aritmética,2025-11,libro,16
+P-0007,4° Primaria,primaria,Aritmética,2025-11,cuaderno,17
+P-0007,4° Primaria,primaria,Aritmética,2025-11,conducta,16
+P-0007,4° Primaria,primaria,Aritmética,2025-11,examen,15
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,18
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,18
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,16
+P-0007,4° Primaria,primaria,Álgebra,2025-11,libro,16
+P-0007,4° Primaria,primaria,Álgebra,2025-11,cuaderno,17
+P-0007,4° Primaria,primaria,Álgebra,2025-11,examen,15
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,19
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,17
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,15
+P-0007,4° Primaria,primaria,Geometría,2025-11,libro,20
+P-0007,4° Primaria,primaria,Geometría,2025-11,cuaderno,19
+P-0007,4° Primaria,primaria,Geometría,2025-11,examen,19
+P-0007,4° Primaria,primaria,Aritmética,2025-12,libro,15
+P-0007,4° Primaria,primaria,Aritmética,2025-12,cuaderno,18
+P-0007,4° Primaria,primaria,Aritmética,2025-12,conducta,19
+P-0007,4° Primaria,primaria,Aritmética,2025-12,examen,13
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,18
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,16
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,17
+P-0007,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,17
+P-0007,4° Primaria,primaria,Álgebra,2025-12,libro,19
+P-0007,4° Primaria,primaria,Álgebra,2025-12,cuaderno,20
+P-0007,4° Primaria,primaria,Álgebra,2025-12,examen,13
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,17
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,17
+P-0007,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,15
+P-0007,4° Primaria,primaria,Geometría,2025-12,libro,19
+P-0007,4° Primaria,primaria,Geometría,2025-12,cuaderno,15
+P-0007,4° Primaria,primaria,Geometría,2025-12,examen,13
+P-0008,4° Primaria,primaria,Aritmética,2025-11,libro,12
+P-0008,4° Primaria,primaria,Aritmética,2025-11,cuaderno,14
+P-0008,4° Primaria,primaria,Aritmética,2025-11,conducta,13
+P-0008,4° Primaria,primaria,Aritmética,2025-11,examen,11
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,14
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,14
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,7
+P-0008,4° Primaria,primaria,Álgebra,2025-11,libro,10
+P-0008,4° Primaria,primaria,Álgebra,2025-11,cuaderno,10
+P-0008,4° Primaria,primaria,Álgebra,2025-11,examen,14
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,14
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,12
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,11
+P-0008,4° Primaria,primaria,Geometría,2025-11,libro,12
+P-0008,4° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0008,4° Primaria,primaria,Geometría,2025-11,examen,10
+P-0008,4° Primaria,primaria,Aritmética,2025-12,libro,17
+P-0008,4° Primaria,primaria,Aritmética,2025-12,cuaderno,15
+P-0008,4° Primaria,primaria,Aritmética,2025-12,conducta,18
+P-0008,4° Primaria,primaria,Aritmética,2025-12,examen,11
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,13
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,14
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,16
+P-0008,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,15
+P-0008,4° Primaria,primaria,Álgebra,2025-12,libro,16
+P-0008,4° Primaria,primaria,Álgebra,2025-12,cuaderno,14
+P-0008,4° Primaria,primaria,Álgebra,2025-12,examen,16
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,15
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,14
+P-0008,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,11
+P-0008,4° Primaria,primaria,Geometría,2025-12,libro,15
+P-0008,4° Primaria,primaria,Geometría,2025-12,cuaderno,14
+P-0008,4° Primaria,primaria,Geometría,2025-12,examen,13
+P-0009,4° Primaria,primaria,Aritmética,2025-11,libro,18
+P-0009,4° Primaria,primaria,Aritmética,2025-11,cuaderno,18
+P-0009,4° Primaria,primaria,Aritmética,2025-11,conducta,20
+P-0009,4° Primaria,primaria,Aritmética,2025-11,examen,17
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,18
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,19
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,18
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,18
+P-0009,4° Primaria,primaria,Álgebra,2025-11,libro,18
+P-0009,4° Primaria,primaria,Álgebra,2025-11,cuaderno,20
+P-0009,4° Primaria,primaria,Álgebra,2025-11,examen,14
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,14
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,16
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,14
+P-0009,4° Primaria,primaria,Geometría,2025-11,libro,15
+P-0009,4° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0009,4° Primaria,primaria,Geometría,2025-11,examen,18
+P-0009,4° Primaria,primaria,Aritmética,2025-12,libro,20
+P-0009,4° Primaria,primaria,Aritmética,2025-12,cuaderno,17
+P-0009,4° Primaria,primaria,Aritmética,2025-12,conducta,20
+P-0009,4° Primaria,primaria,Aritmética,2025-12,examen,16
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,20
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,16
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,15
+P-0009,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,19
+P-0009,4° Primaria,primaria,Álgebra,2025-12,libro,19
+P-0009,4° Primaria,primaria,Álgebra,2025-12,cuaderno,20
+P-0009,4° Primaria,primaria,Álgebra,2025-12,examen,15
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,20
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,18
+P-0009,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,14
+P-0009,4° Primaria,primaria,Geometría,2025-12,libro,18
+P-0009,4° Primaria,primaria,Geometría,2025-12,cuaderno,16
+P-0009,4° Primaria,primaria,Geometría,2025-12,examen,14
+P-0010,4° Primaria,primaria,Aritmética,2025-11,libro,16
+P-0010,4° Primaria,primaria,Aritmética,2025-11,cuaderno,17
+P-0010,4° Primaria,primaria,Aritmética,2025-11,conducta,15
+P-0010,4° Primaria,primaria,Aritmética,2025-11,examen,15
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,15
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,14
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,14
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,10
+P-0010,4° Primaria,primaria,Álgebra,2025-11,libro,10
+P-0010,4° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0010,4° Primaria,primaria,Álgebra,2025-11,examen,13
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,14
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,13
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,10
+P-0010,4° Primaria,primaria,Geometría,2025-11,libro,16
+P-0010,4° Primaria,primaria,Geometría,2025-11,cuaderno,12
+P-0010,4° Primaria,primaria,Geometría,2025-11,examen,11
+P-0010,4° Primaria,primaria,Aritmética,2025-12,libro,16
+P-0010,4° Primaria,primaria,Aritmética,2025-12,cuaderno,17
+P-0010,4° Primaria,primaria,Aritmética,2025-12,conducta,16
+P-0010,4° Primaria,primaria,Aritmética,2025-12,examen,12
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,17
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,16
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,15
+P-0010,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,11
+P-0010,4° Primaria,primaria,Álgebra,2025-12,libro,16
+P-0010,4° Primaria,primaria,Álgebra,2025-12,cuaderno,12
+P-0010,4° Primaria,primaria,Álgebra,2025-12,examen,17
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,17
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,17
+P-0010,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,13
+P-0010,4° Primaria,primaria,Geometría,2025-12,libro,14
+P-0010,4° Primaria,primaria,Geometría,2025-12,cuaderno,15
+P-0010,4° Primaria,primaria,Geometría,2025-12,examen,6
+P-0011,4° Primaria,primaria,Aritmética,2025-11,libro,20
+P-0011,4° Primaria,primaria,Aritmética,2025-11,cuaderno,20
+P-0011,4° Primaria,primaria,Aritmética,2025-11,conducta,20
+P-0011,4° Primaria,primaria,Aritmética,2025-11,examen,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,20
+P-0011,4° Primaria,primaria,Álgebra,2025-11,libro,20
+P-0011,4° Primaria,primaria,Álgebra,2025-11,cuaderno,20
+P-0011,4° Primaria,primaria,Álgebra,2025-11,examen,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,20
+P-0011,4° Primaria,primaria,Geometría,2025-11,libro,20
+P-0011,4° Primaria,primaria,Geometría,2025-11,cuaderno,20
+P-0011,4° Primaria,primaria,Geometría,2025-11,examen,18
+P-0011,4° Primaria,primaria,Aritmética,2025-12,libro,20
+P-0011,4° Primaria,primaria,Aritmética,2025-12,cuaderno,20
+P-0011,4° Primaria,primaria,Aritmética,2025-12,conducta,20
+P-0011,4° Primaria,primaria,Aritmética,2025-12,examen,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,20
+P-0011,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,20
+P-0011,4° Primaria,primaria,Álgebra,2025-12,libro,20
+P-0011,4° Primaria,primaria,Álgebra,2025-12,cuaderno,20
+P-0011,4° Primaria,primaria,Álgebra,2025-12,examen,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,20
+P-0011,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,20
+P-0011,4° Primaria,primaria,Geometría,2025-12,libro,20
+P-0011,4° Primaria,primaria,Geometría,2025-12,cuaderno,20
+P-0011,4° Primaria,primaria,Geometría,2025-12,examen,19
+P-0012,4° Primaria,primaria,Aritmética,2025-11,libro,16
+P-0012,4° Primaria,primaria,Aritmética,2025-11,cuaderno,18
+P-0012,4° Primaria,primaria,Aritmética,2025-11,conducta,16
+P-0012,4° Primaria,primaria,Aritmética,2025-11,examen,16
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-11,libro,18
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,19
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-11,conducta,17
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-11,examen,13
+P-0012,4° Primaria,primaria,Álgebra,2025-11,libro,20
+P-0012,4° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0012,4° Primaria,primaria,Álgebra,2025-11,examen,20
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-11,libro,17
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-11,cuaderno,16
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-11,examen,13
+P-0012,4° Primaria,primaria,Geometría,2025-11,libro,18
+P-0012,4° Primaria,primaria,Geometría,2025-11,cuaderno,19
+P-0012,4° Primaria,primaria,Geometría,2025-11,examen,18
+P-0012,4° Primaria,primaria,Aritmética,2025-12,libro,19
+P-0012,4° Primaria,primaria,Aritmética,2025-12,cuaderno,20
+P-0012,4° Primaria,primaria,Aritmética,2025-12,conducta,19
+P-0012,4° Primaria,primaria,Aritmética,2025-12,examen,15
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-12,libro,17
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,16
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-12,conducta,20
+P-0012,4° Primaria,primaria,Razonamiento matemático,2025-12,examen,13
+P-0012,4° Primaria,primaria,Álgebra,2025-12,libro,20
+P-0012,4° Primaria,primaria,Álgebra,2025-12,cuaderno,19
+P-0012,4° Primaria,primaria,Álgebra,2025-12,examen,17
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-12,libro,20
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-12,cuaderno,20
+P-0012,4° Primaria,primaria,Razonamiento verbal,2025-12,examen,14
+P-0012,4° Primaria,primaria,Geometría,2025-12,libro,20
+P-0012,4° Primaria,primaria,Geometría,2025-12,cuaderno,20
+P-0012,4° Primaria,primaria,Geometría,2025-12,examen,20
+P-0013,5° Primaria,primaria,Aritmética,2025-11,libro,13
+P-0013,5° Primaria,primaria,Aritmética,2025-11,cuaderno,13
+P-0013,5° Primaria,primaria,Aritmética,2025-11,examen,11
+P-0013,5° Primaria,primaria,Geometría,2025-11,libro,15
+P-0013,5° Primaria,primaria,Geometría,2025-11,cuaderno,15
+P-0013,5° Primaria,primaria,Geometría,2025-11,examen,10
+P-0013,5° Primaria,primaria,Álgebra,2025-11,libro,15
+P-0013,5° Primaria,primaria,Álgebra,2025-11,cuaderno,14
+P-0013,5° Primaria,primaria,Álgebra,2025-11,examen,13
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,14
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,14
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,9
+P-0013,5° Primaria,primaria,Aritmética,2025-12,libro,14
+P-0013,5° Primaria,primaria,Aritmética,2025-12,cuaderno,14
+P-0013,5° Primaria,primaria,Aritmética,2025-12,examen,13
+P-0013,5° Primaria,primaria,Geometría,2025-12,libro,13
+P-0013,5° Primaria,primaria,Geometría,2025-12,cuaderno,13
+P-0013,5° Primaria,primaria,Geometría,2025-12,examen,12
+P-0013,5° Primaria,primaria,Álgebra,2025-12,libro,12
+P-0013,5° Primaria,primaria,Álgebra,2025-12,cuaderno,12
+P-0013,5° Primaria,primaria,Álgebra,2025-12,examen,7
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,15
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,13
+P-0013,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,13
+P-0014,5° Primaria,primaria,Aritmética,2025-11,libro,15
+P-0014,5° Primaria,primaria,Aritmética,2025-11,cuaderno,15
+P-0014,5° Primaria,primaria,Aritmética,2025-11,examen,16
+P-0014,5° Primaria,primaria,Geometría,2025-11,libro,14
+P-0014,5° Primaria,primaria,Geometría,2025-11,cuaderno,17
+P-0014,5° Primaria,primaria,Geometría,2025-11,examen,9
+P-0014,5° Primaria,primaria,Álgebra,2025-11,libro,16
+P-0014,5° Primaria,primaria,Álgebra,2025-11,cuaderno,18
+P-0014,5° Primaria,primaria,Álgebra,2025-11,examen,14
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,15
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,15
+P-0014,5° Primaria,primaria,Aritmética,2025-12,libro,12
+P-0014,5° Primaria,primaria,Aritmética,2025-12,cuaderno,13
+P-0014,5° Primaria,primaria,Aritmética,2025-12,examen,11
+P-0014,5° Primaria,primaria,Geometría,2025-12,libro,13
+P-0014,5° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0014,5° Primaria,primaria,Geometría,2025-12,examen,6
+P-0014,5° Primaria,primaria,Álgebra,2025-12,libro,10
+P-0014,5° Primaria,primaria,Álgebra,2025-12,cuaderno,11
+P-0014,5° Primaria,primaria,Álgebra,2025-12,examen,12
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,14
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,12
+P-0014,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,11
+P-0015,5° Primaria,primaria,Aritmética,2025-11,libro,16
+P-0015,5° Primaria,primaria,Aritmética,2025-11,cuaderno,17
+P-0015,5° Primaria,primaria,Aritmética,2025-11,examen,16
+P-0015,5° Primaria,primaria,Geometría,2025-11,libro,16
+P-0015,5° Primaria,primaria,Geometría,2025-11,cuaderno,15
+P-0015,5° Primaria,primaria,Geometría,2025-11,examen,14
+P-0015,5° Primaria,primaria,Álgebra,2025-11,libro,17
+P-0015,5° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0015,5° Primaria,primaria,Álgebra,2025-11,examen,16
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,14
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,12
+P-0015,5° Primaria,primaria,Aritmética,2025-12,libro,15
+P-0015,5° Primaria,primaria,Aritmética,2025-12,cuaderno,17
+P-0015,5° Primaria,primaria,Aritmética,2025-12,examen,11
+P-0015,5° Primaria,primaria,Geometría,2025-12,libro,14
+P-0015,5° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0015,5° Primaria,primaria,Geometría,2025-12,examen,20
+P-0015,5° Primaria,primaria,Álgebra,2025-12,libro,16
+P-0015,5° Primaria,primaria,Álgebra,2025-12,cuaderno,14
+P-0015,5° Primaria,primaria,Álgebra,2025-12,examen,12
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,13
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,14
+P-0015,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,10
+P-0016,5° Primaria,primaria,Aritmética,2025-11,libro,17
+P-0016,5° Primaria,primaria,Aritmética,2025-11,cuaderno,18
+P-0016,5° Primaria,primaria,Aritmética,2025-11,examen,9
+P-0016,5° Primaria,primaria,Geometría,2025-11,libro,18
+P-0016,5° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0016,5° Primaria,primaria,Geometría,2025-11,examen,14
+P-0016,5° Primaria,primaria,Álgebra,2025-11,libro,17
+P-0016,5° Primaria,primaria,Álgebra,2025-11,cuaderno,17
+P-0016,5° Primaria,primaria,Álgebra,2025-11,examen,15
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,19
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,16
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,16
+P-0016,5° Primaria,primaria,Aritmética,2025-12,libro,14
+P-0016,5° Primaria,primaria,Aritmética,2025-12,cuaderno,12
+P-0016,5° Primaria,primaria,Aritmética,2025-12,examen,13
+P-0016,5° Primaria,primaria,Geometría,2025-12,libro,12
+P-0016,5° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0016,5° Primaria,primaria,Geometría,2025-12,examen,11
+P-0016,5° Primaria,primaria,Álgebra,2025-12,libro,13
+P-0016,5° Primaria,primaria,Álgebra,2025-12,cuaderno,13
+P-0016,5° Primaria,primaria,Álgebra,2025-12,examen,10
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,11
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,12
+P-0016,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,8
+P-0017,5° Primaria,primaria,Aritmética,2025-11,libro,15
+P-0017,5° Primaria,primaria,Aritmética,2025-11,cuaderno,14
+P-0017,5° Primaria,primaria,Aritmética,2025-11,examen,16
+P-0017,5° Primaria,primaria,Geometría,2025-11,libro,17
+P-0017,5° Primaria,primaria,Geometría,2025-11,cuaderno,17
+P-0017,5° Primaria,primaria,Geometría,2025-11,examen,13
+P-0017,5° Primaria,primaria,Álgebra,2025-11,libro,20
+P-0017,5° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0017,5° Primaria,primaria,Álgebra,2025-11,examen,16
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,15
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,18
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,14
+P-0017,5° Primaria,primaria,Aritmética,2025-12,libro,15
+P-0017,5° Primaria,primaria,Aritmética,2025-12,cuaderno,13
+P-0017,5° Primaria,primaria,Aritmética,2025-12,examen,10
+P-0017,5° Primaria,primaria,Geometría,2025-12,libro,15
+P-0017,5° Primaria,primaria,Geometría,2025-12,cuaderno,17
+P-0017,5° Primaria,primaria,Geometría,2025-12,examen,15
+P-0017,5° Primaria,primaria,Álgebra,2025-12,libro,14
+P-0017,5° Primaria,primaria,Álgebra,2025-12,cuaderno,16
+P-0017,5° Primaria,primaria,Álgebra,2025-12,examen,14
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,14
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,19
+P-0017,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,10
+P-0018,5° Primaria,primaria,Aritmética,2025-11,libro,20
+P-0018,5° Primaria,primaria,Aritmética,2025-11,cuaderno,20
+P-0018,5° Primaria,primaria,Aritmética,2025-11,examen,20
+P-0018,5° Primaria,primaria,Geometría,2025-11,libro,20
+P-0018,5° Primaria,primaria,Geometría,2025-11,cuaderno,20
+P-0018,5° Primaria,primaria,Geometría,2025-11,examen,17
+P-0018,5° Primaria,primaria,Álgebra,2025-11,libro,20
+P-0018,5° Primaria,primaria,Álgebra,2025-11,cuaderno,20
+P-0018,5° Primaria,primaria,Álgebra,2025-11,examen,16
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,20
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,20
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,18
+P-0018,5° Primaria,primaria,Aritmética,2025-12,libro,20
+P-0018,5° Primaria,primaria,Aritmética,2025-12,cuaderno,20
+P-0018,5° Primaria,primaria,Aritmética,2025-12,examen,20
+P-0018,5° Primaria,primaria,Geometría,2025-12,libro,20
+P-0018,5° Primaria,primaria,Geometría,2025-12,cuaderno,20
+P-0018,5° Primaria,primaria,Geometría,2025-12,examen,20
+P-0018,5° Primaria,primaria,Álgebra,2025-12,libro,20
+P-0018,5° Primaria,primaria,Álgebra,2025-12,cuaderno,20
+P-0018,5° Primaria,primaria,Álgebra,2025-12,examen,20
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,20
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,20
+P-0018,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,20
+P-0019,5° Primaria,primaria,Aritmética,2025-11,libro,13
+P-0019,5° Primaria,primaria,Aritmética,2025-11,cuaderno,13
+P-0019,5° Primaria,primaria,Aritmética,2025-11,examen,11
+P-0019,5° Primaria,primaria,Geometría,2025-11,libro,14
+P-0019,5° Primaria,primaria,Geometría,2025-11,cuaderno,15
+P-0019,5° Primaria,primaria,Geometría,2025-11,examen,12
+P-0019,5° Primaria,primaria,Álgebra,2025-11,libro,13
+P-0019,5° Primaria,primaria,Álgebra,2025-11,cuaderno,15
+P-0019,5° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,16
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,17
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,17
+P-0019,5° Primaria,primaria,Aritmética,2025-12,libro,14
+P-0019,5° Primaria,primaria,Aritmética,2025-12,cuaderno,14
+P-0019,5° Primaria,primaria,Aritmética,2025-12,examen,15
+P-0019,5° Primaria,primaria,Geometría,2025-12,libro,15
+P-0019,5° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0019,5° Primaria,primaria,Geometría,2025-12,examen,8
+P-0019,5° Primaria,primaria,Álgebra,2025-12,libro,12
+P-0019,5° Primaria,primaria,Álgebra,2025-12,cuaderno,11
+P-0019,5° Primaria,primaria,Álgebra,2025-12,examen,11
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,12
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,13
+P-0019,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,7
+P-0020,5° Primaria,primaria,Aritmética,2025-11,libro,14
+P-0020,5° Primaria,primaria,Aritmética,2025-11,cuaderno,16
+P-0020,5° Primaria,primaria,Aritmética,2025-11,examen,13
+P-0020,5° Primaria,primaria,Geometría,2025-11,libro,15
+P-0020,5° Primaria,primaria,Geometría,2025-11,cuaderno,13
+P-0020,5° Primaria,primaria,Geometría,2025-11,examen,11
+P-0020,5° Primaria,primaria,Álgebra,2025-11,libro,13
+P-0020,5° Primaria,primaria,Álgebra,2025-11,cuaderno,14
+P-0020,5° Primaria,primaria,Álgebra,2025-11,examen,11
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,11
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,13
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,11
+P-0020,5° Primaria,primaria,Aritmética,2025-12,libro,11
+P-0020,5° Primaria,primaria,Aritmética,2025-12,cuaderno,11
+P-0020,5° Primaria,primaria,Aritmética,2025-12,examen,10
+P-0020,5° Primaria,primaria,Geometría,2025-12,libro,11
+P-0020,5° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0020,5° Primaria,primaria,Geometría,2025-12,examen,8
+P-0020,5° Primaria,primaria,Álgebra,2025-12,libro,11
+P-0020,5° Primaria,primaria,Álgebra,2025-12,cuaderno,10
+P-0020,5° Primaria,primaria,Álgebra,2025-12,examen,13
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,8
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,9
+P-0020,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,7
+P-0021,5° Primaria,primaria,Aritmética,2025-11,libro,16
+P-0021,5° Primaria,primaria,Aritmética,2025-11,cuaderno,19
+P-0021,5° Primaria,primaria,Aritmética,2025-11,examen,13
+P-0021,5° Primaria,primaria,Geometría,2025-11,libro,20
+P-0021,5° Primaria,primaria,Geometría,2025-11,cuaderno,20
+P-0021,5° Primaria,primaria,Geometría,2025-11,examen,16
+P-0021,5° Primaria,primaria,Álgebra,2025-11,libro,17
+P-0021,5° Primaria,primaria,Álgebra,2025-11,cuaderno,20
+P-0021,5° Primaria,primaria,Álgebra,2025-11,examen,13
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,17
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,17
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,11
+P-0021,5° Primaria,primaria,Aritmética,2025-12,libro,17
+P-0021,5° Primaria,primaria,Aritmética,2025-12,cuaderno,17
+P-0021,5° Primaria,primaria,Aritmética,2025-12,examen,13
+P-0021,5° Primaria,primaria,Geometría,2025-12,libro,18
+P-0021,5° Primaria,primaria,Geometría,2025-12,cuaderno,20
+P-0021,5° Primaria,primaria,Geometría,2025-12,examen,17
+P-0021,5° Primaria,primaria,Álgebra,2025-12,libro,19
+P-0021,5° Primaria,primaria,Álgebra,2025-12,cuaderno,16
+P-0021,5° Primaria,primaria,Álgebra,2025-12,examen,15
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,16
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,15
+P-0021,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,13
+P-0022,5° Primaria,primaria,Aritmética,2025-11,libro,14
+P-0022,5° Primaria,primaria,Aritmética,2025-11,cuaderno,14
+P-0022,5° Primaria,primaria,Aritmética,2025-11,examen,13
+P-0022,5° Primaria,primaria,Geometría,2025-11,libro,13
+P-0022,5° Primaria,primaria,Geometría,2025-11,cuaderno,14
+P-0022,5° Primaria,primaria,Geometría,2025-11,examen,15
+P-0022,5° Primaria,primaria,Álgebra,2025-11,libro,14
+P-0022,5° Primaria,primaria,Álgebra,2025-11,cuaderno,13
+P-0022,5° Primaria,primaria,Álgebra,2025-11,examen,15
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-11,libro,15
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-11,cuaderno,13
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-11,examen,16
+P-0022,5° Primaria,primaria,Aritmética,2025-12,libro,19
+P-0022,5° Primaria,primaria,Aritmética,2025-12,cuaderno,18
+P-0022,5° Primaria,primaria,Aritmética,2025-12,examen,11
+P-0022,5° Primaria,primaria,Geometría,2025-12,libro,14
+P-0022,5° Primaria,primaria,Geometría,2025-12,cuaderno,15
+P-0022,5° Primaria,primaria,Geometría,2025-12,examen,9
+P-0022,5° Primaria,primaria,Álgebra,2025-12,libro,16
+P-0022,5° Primaria,primaria,Álgebra,2025-12,cuaderno,15
+P-0022,5° Primaria,primaria,Álgebra,2025-12,examen,12
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-12,libro,16
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-12,cuaderno,12
+P-0022,5° Primaria,primaria,Razonamiento matemático,2025-12,examen,11
+P-0023,6° Primaria,primaria,Álgebra,2025-11,libro,12
+P-0023,6° Primaria,primaria,Álgebra,2025-11,cuaderno,13
+P-0023,6° Primaria,primaria,Álgebra,2025-11,conducta,13
+P-0023,6° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0023,6° Primaria,primaria,Geometría,2025-11,libro,13
+P-0023,6° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0023,6° Primaria,primaria,Geometría,2025-11,examen,10
+P-0023,6° Primaria,primaria,Álgebra,2025-12,libro,12
+P-0023,6° Primaria,primaria,Álgebra,2025-12,cuaderno,14
+P-0023,6° Primaria,primaria,Álgebra,2025-12,conducta,13
+P-0023,6° Primaria,primaria,Álgebra,2025-12,examen,9
+P-0023,6° Primaria,primaria,Geometría,2025-12,libro,11
+P-0023,6° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0023,6° Primaria,primaria,Geometría,2025-12,examen,9
+P-0024,6° Primaria,primaria,Álgebra,2025-11,libro,10
+P-0024,6° Primaria,primaria,Álgebra,2025-11,cuaderno,10
+P-0024,6° Primaria,primaria,Álgebra,2025-11,conducta,10
+P-0024,6° Primaria,primaria,Álgebra,2025-11,examen,5
+P-0024,6° Primaria,primaria,Geometría,2025-11,libro,10
+P-0024,6° Primaria,primaria,Geometría,2025-11,cuaderno,11
+P-0024,6° Primaria,primaria,Geometría,2025-11,examen,6
+P-0024,6° Primaria,primaria,Álgebra,2025-12,libro,12
+P-0024,6° Primaria,primaria,Álgebra,2025-12,cuaderno,13
+P-0024,6° Primaria,primaria,Álgebra,2025-12,conducta,13
+P-0024,6° Primaria,primaria,Álgebra,2025-12,examen,9
+P-0024,6° Primaria,primaria,Geometría,2025-12,libro,14
+P-0024,6° Primaria,primaria,Geometría,2025-12,cuaderno,12
+P-0024,6° Primaria,primaria,Geometría,2025-12,examen,10
+P-0025,6° Primaria,primaria,Álgebra,2025-11,libro,12
+P-0025,6° Primaria,primaria,Álgebra,2025-11,cuaderno,14
+P-0025,6° Primaria,primaria,Álgebra,2025-11,conducta,16
+P-0025,6° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0025,6° Primaria,primaria,Geometría,2025-11,libro,15
+P-0025,6° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0025,6° Primaria,primaria,Geometría,2025-11,examen,12
+P-0025,6° Primaria,primaria,Álgebra,2025-12,libro,15
+P-0025,6° Primaria,primaria,Álgebra,2025-12,cuaderno,17
+P-0025,6° Primaria,primaria,Álgebra,2025-12,conducta,15
+P-0025,6° Primaria,primaria,Álgebra,2025-12,examen,8
+P-0025,6° Primaria,primaria,Geometría,2025-12,libro,15
+P-0025,6° Primaria,primaria,Geometría,2025-12,cuaderno,13
+P-0025,6° Primaria,primaria,Geometría,2025-12,examen,10
+P-0026,6° Primaria,primaria,Álgebra,2025-11,libro,16
+P-0026,6° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0026,6° Primaria,primaria,Álgebra,2025-11,conducta,17
+P-0026,6° Primaria,primaria,Álgebra,2025-11,examen,8
+P-0026,6° Primaria,primaria,Geometría,2025-11,libro,17
+P-0026,6° Primaria,primaria,Geometría,2025-11,cuaderno,16
+P-0026,6° Primaria,primaria,Geometría,2025-11,examen,16
+P-0026,6° Primaria,primaria,Álgebra,2025-12,libro,18
+P-0026,6° Primaria,primaria,Álgebra,2025-12,cuaderno,18
+P-0026,6° Primaria,primaria,Álgebra,2025-12,conducta,18
+P-0026,6° Primaria,primaria,Álgebra,2025-12,examen,14
+P-0026,6° Primaria,primaria,Geometría,2025-12,libro,20
+P-0026,6° Primaria,primaria,Geometría,2025-12,cuaderno,17
+P-0026,6° Primaria,primaria,Geometría,2025-12,examen,15
+P-0027,6° Primaria,primaria,Álgebra,2025-11,libro,14
+P-0027,6° Primaria,primaria,Álgebra,2025-11,cuaderno,13
+P-0027,6° Primaria,primaria,Álgebra,2025-11,conducta,14
+P-0027,6° Primaria,primaria,Álgebra,2025-11,examen,11
+P-0027,6° Primaria,primaria,Geometría,2025-11,libro,17
+P-0027,6° Primaria,primaria,Geometría,2025-11,cuaderno,15
+P-0027,6° Primaria,primaria,Geometría,2025-11,examen,8
+P-0027,6° Primaria,primaria,Álgebra,2025-12,libro,12
+P-0027,6° Primaria,primaria,Álgebra,2025-12,cuaderno,11
+P-0027,6° Primaria,primaria,Álgebra,2025-12,conducta,10
+P-0027,6° Primaria,primaria,Álgebra,2025-12,examen,5
+P-0027,6° Primaria,primaria,Geometría,2025-12,libro,10
+P-0027,6° Primaria,primaria,Geometría,2025-12,cuaderno,9
+P-0027,6° Primaria,primaria,Geometría,2025-12,examen,10
+P-0028,6° Primaria,primaria,Álgebra,2025-11,libro,13
+P-0028,6° Primaria,primaria,Álgebra,2025-11,cuaderno,16
+P-0028,6° Primaria,primaria,Álgebra,2025-11,conducta,14
+P-0028,6° Primaria,primaria,Álgebra,2025-11,examen,10
+P-0028,6° Primaria,primaria,Geometría,2025-11,libro,18
+P-0028,6° Primaria,primaria,Geometría,2025-11,cuaderno,14
+P-0028,6° Primaria,primaria,Geometría,2025-11,examen,15
+P-0028,6° Primaria,primaria,Álgebra,2025-12,libro,18
+P-0028,6° Primaria,primaria,Álgebra,2025-12,cuaderno,19
+P-0028,6° Primaria,primaria,Álgebra,2025-12,conducta,16
+P-0028,6° Primaria,primaria,Álgebra,2025-12,examen,16
+P-0028,6° Primaria,primaria,Geometría,2025-12,libro,17
+P-0028,6° Primaria,primaria,Geometría,2025-12,cuaderno,17
+P-0028,6° Primaria,primaria,Geometría,2025-12,examen,14
+P-0029,6° Primaria,primaria,Álgebra,2025-11,libro,15
+P-0029,6° Primaria,primaria,Álgebra,2025-11,cuaderno,18
+P-0029,6° Primaria,primaria,Álgebra,2025-11,conducta,16
+P-0029,6° Primaria,primaria,Álgebra,2025-11,examen,12
+P-0029,6° Primaria,primaria,Geometría,2025-11,libro,18
+P-0029,6° Primaria,primaria,Geometría,2025-11,cuaderno,17
+P-0029,6° Primaria,primaria,Geometría,2025-11,examen,17
+P-0029,6° Primaria,primaria,Álgebra,2025-12,libro,19
+P-0029,6° Primaria,primaria,Álgebra,2025-12,cuaderno,19
+P-0029,6° Primaria,primaria,Álgebra,2025-12,conducta,18
+P-0029,6° Primaria,primaria,Álgebra,2025-12,examen,16
+P-0029,6° Primaria,primaria,Geometría,2025-12,libro,16
+P-0029,6° Primaria,primaria,Geometría,2025-12,cuaderno,17
+P-0029,6° Primaria,primaria,Geometría,2025-12,examen,15
+P-0030,1° Secundaria,secundaria,Historia,2025-11,cuaderno,17
+P-0030,1° Secundaria,secundaria,Historia,2025-11,conducta,16
+P-0030,1° Secundaria,secundaria,Historia,2025-11,examen,12
+P-0030,1° Secundaria,secundaria,Historia,2025-12,cuaderno,16
+P-0030,1° Secundaria,secundaria,Historia,2025-12,conducta,14
+P-0030,1° Secundaria,secundaria,Historia,2025-12,examen,17
+P-0031,1° Secundaria,secundaria,Historia,2025-11,cuaderno,19
+P-0031,1° Secundaria,secundaria,Historia,2025-11,conducta,20
+P-0031,1° Secundaria,secundaria,Historia,2025-11,examen,18
+P-0031,1° Secundaria,secundaria,Historia,2025-12,cuaderno,15
+P-0031,1° Secundaria,secundaria,Historia,2025-12,conducta,19
+P-0031,1° Secundaria,secundaria,Historia,2025-12,examen,18
+P-0032,1° Secundaria,secundaria,Historia,2025-11,cuaderno,19
+P-0032,1° Secundaria,secundaria,Historia,2025-11,conducta,19
+P-0032,1° Secundaria,secundaria,Historia,2025-11,examen,20
+P-0032,1° Secundaria,secundaria,Historia,2025-12,cuaderno,17
+P-0032,1° Secundaria,secundaria,Historia,2025-12,conducta,19
+P-0032,1° Secundaria,secundaria,Historia,2025-12,examen,20
+P-0033,1° Secundaria,secundaria,Historia,2025-11,cuaderno,15
+P-0033,1° Secundaria,secundaria,Historia,2025-11,conducta,16
+P-0033,1° Secundaria,secundaria,Historia,2025-11,examen,12
+P-0033,1° Secundaria,secundaria,Historia,2025-12,cuaderno,14
+P-0033,1° Secundaria,secundaria,Historia,2025-12,conducta,16
+P-0033,1° Secundaria,secundaria,Historia,2025-12,examen,8
+P-0034,1° Secundaria,secundaria,Historia,2025-11,cuaderno,16
+P-0034,1° Secundaria,secundaria,Historia,2025-11,conducta,16
+P-0034,1° Secundaria,secundaria,Historia,2025-11,examen,13
+P-0034,1° Secundaria,secundaria,Historia,2025-12,cuaderno,15
+P-0034,1° Secundaria,secundaria,Historia,2025-12,conducta,15
+P-0034,1° Secundaria,secundaria,Historia,2025-12,examen,8
+P-0035,1° Secundaria,secundaria,Historia,2025-11,cuaderno,17
+P-0035,1° Secundaria,secundaria,Historia,2025-11,conducta,14
+P-0035,1° Secundaria,secundaria,Historia,2025-11,examen,13
+P-0035,1° Secundaria,secundaria,Historia,2025-12,cuaderno,20
+P-0035,1° Secundaria,secundaria,Historia,2025-12,conducta,19
+P-0035,1° Secundaria,secundaria,Historia,2025-12,examen,20
+P-0036,1° Secundaria,secundaria,Historia,2025-11,cuaderno,14
+P-0036,1° Secundaria,secundaria,Historia,2025-11,conducta,15
+P-0036,1° Secundaria,secundaria,Historia,2025-11,examen,11
+P-0036,1° Secundaria,secundaria,Historia,2025-12,cuaderno,14
+P-0036,1° Secundaria,secundaria,Historia,2025-12,conducta,13
+P-0036,1° Secundaria,secundaria,Historia,2025-12,examen,11
+P-0037,1° Secundaria,secundaria,Historia,2025-11,cuaderno,11
+P-0037,1° Secundaria,secundaria,Historia,2025-11,conducta,12
+P-0037,1° Secundaria,secundaria,Historia,2025-11,examen,9
+P-0037,1° Secundaria,secundaria,Historia,2025-12,cuaderno,13
+P-0037,1° Secundaria,secundaria,Historia,2025-12,conducta,14
+P-0037,1° Secundaria,secundaria,Historia,2025-12,examen,13
+P-0038,2° Secundaria,secundaria,Economía,2025-11,cuaderno,11
+P-0038,2° Secundaria,secundaria,Economía,2025-11,conducta,12
+P-0038,2° Secundaria,secundaria,Economía,2025-11,examen,17
+P-0038,2° Secundaria,secundaria,Economía,2025-12,cuaderno,13
+P-0038,2° Secundaria,secundaria,Economía,2025-12,conducta,14
+P-0038,2° Secundaria,secundaria,Economía,2025-12,examen,13
+P-0039,2° Secundaria,secundaria,Economía,2025-11,cuaderno,15
+P-0039,2° Secundaria,secundaria,Economía,2025-11,conducta,16
+P-0039,2° Secundaria,secundaria,Economía,2025-11,examen,13
+P-0039,2° Secundaria,secundaria,Economía,2025-12,cuaderno,13
+P-0039,2° Secundaria,secundaria,Economía,2025-12,conducta,17
+P-0039,2° Secundaria,secundaria,Economía,2025-12,examen,12
+P-0040,2° Secundaria,secundaria,Economía,2025-11,cuaderno,17
+P-0040,2° Secundaria,secundaria,Economía,2025-11,conducta,19
+P-0040,2° Secundaria,secundaria,Economía,2025-11,examen,17
+P-0040,2° Secundaria,secundaria,Economía,2025-12,cuaderno,20
+P-0040,2° Secundaria,secundaria,Economía,2025-12,conducta,20
+P-0040,2° Secundaria,secundaria,Economía,2025-12,examen,16
+P-0041,2° Secundaria,secundaria,Economía,2025-11,cuaderno,19
+P-0041,2° Secundaria,secundaria,Economía,2025-11,conducta,20
+P-0041,2° Secundaria,secundaria,Economía,2025-11,examen,15
+P-0041,2° Secundaria,secundaria,Economía,2025-12,cuaderno,20
+P-0041,2° Secundaria,secundaria,Economía,2025-12,conducta,20
+P-0041,2° Secundaria,secundaria,Economía,2025-12,examen,20
+P-0042,2° Secundaria,secundaria,Economía,2025-11,cuaderno,12
+P-0042,2° Secundaria,secundaria,Economía,2025-11,conducta,14
+P-0042,2° Secundaria,secundaria,Economía,2025-11,examen,13
+P-0042,2° Secundaria,secundaria,Economía,2025-12,cuaderno,12
+P-0042,2° Secundaria,secundaria,Economía,2025-12,conducta,12
+P-0042,2° Secundaria,secundaria,Economía,2025-12,examen,10
+P-0043,2° Secundaria,secundaria,Economía,2025-11,cuaderno,13
+P-0043,2° Secundaria,secundaria,Economía,2025-11,conducta,12
+P-0043,2° Secundaria,secundaria,Economía,2025-11,examen,7
+P-0043,2° Secundaria,secundaria,Economía,2025-12,cuaderno,11
+P-0043,2° Secundaria,secundaria,Economía,2025-12,conducta,13
+P-0043,2° Secundaria,secundaria,Economía,2025-12,examen,12
+P-0044,2° Secundaria,secundaria,Economía,2025-11,cuaderno,17
+P-0044,2° Secundaria,secundaria,Economía,2025-11,conducta,15
+P-0044,2° Secundaria,secundaria,Economía,2025-11,examen,12
+P-0044,2° Secundaria,secundaria,Economía,2025-12,cuaderno,16
+P-0044,2° Secundaria,secundaria,Economía,2025-12,conducta,16
+P-0044,2° Secundaria,secundaria,Economía,2025-12,examen,14
+P-0045,2° Secundaria,secundaria,Economía,2025-11,cuaderno,20
+P-0045,2° Secundaria,secundaria,Economía,2025-11,conducta,20
+P-0045,2° Secundaria,secundaria,Economía,2025-11,examen,20
+P-0045,2° Secundaria,secundaria,Economía,2025-12,cuaderno,20
+P-0045,2° Secundaria,secundaria,Economía,2025-12,conducta,20
+P-0045,2° Secundaria,secundaria,Economía,2025-12,examen,20

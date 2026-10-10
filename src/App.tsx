@@ -45,13 +45,16 @@ interface Estudiante {
   grado: string;
   seccion: string;
   nivel_educativo: string;
-  inasistencias: number;
+  inasistencias: number | null;
   estado_pension: string;
   nota_final: number;
+  promedio_anterior?: number | null;
   ultima_prediccion: {
-    probabilidad: number;
+    probabilidad: number | null;
     nivel: string;
     fecha: string;
+    origen?: string;
+    motivo?: string;
   };
 }
 
@@ -61,6 +64,7 @@ const API_URL: string = ((import.meta as any).env?.VITE_API_URL ?? "https://proy
 
 // Tres niveles de riesgo, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo).
 // Cortes de la probabilidad que entrega el modelo: menos de 0.50, bajo; de 0.50 a 0.75, medio; 0.75 o más, alto.
+const NIVELES = ["Riesgo bajo", "Riesgo medio", "Riesgo alto"];
 const nivelDesde = (prob: number) => (prob >= 0.75 ? "Riesgo alto" : prob >= 0.5 ? "Riesgo medio" : "Riesgo bajo");
 
 export default function App() {
@@ -143,6 +147,14 @@ export default function App() {
     { id: 3, estudiante: "Ana Sofía Vargas", grado: "1° Sec. A", criticidad: "medio", mensaje: "Riesgo medio detectado: Ana Sofía Vargas - Alerta por 6 inasistencias acumuladas", fecha: "Ayer, 04:45 pm", atendida: false }
   ]);
 
+  // Estado de la API (tipo de datos, periodo y origen del nivel de riesgo) y última validación de los datos.
+  const [estadoApi, setEstadoApi] = useState<any>(null);
+  const [calidad, setCalidad] = useState<any>(null);
+  useEffect(() => {
+    fetch(`${API_URL}/api/estado`).then((r) => (r.ok ? r.json() : null)).then(setEstadoApi).catch(() => setEstadoApi(null));
+    fetch(`${API_URL}/api/calidad`).then((r) => (r.ok ? r.json() : null)).then(setCalidad).catch(() => setCalidad(null));
+  }, []);
+
   // De dónde vienen los datos que se muestran: la API en línea o la copia local de ejemplo.
   const [origenDatos, setOrigenDatos] = useState<"cargando" | "api" | "local">("cargando");
 
@@ -153,12 +165,15 @@ export default function App() {
         if (response.ok) {
           const recibidos = await response.json();
           if (recibidos && recibidos.length > 0) {
-            // El nivel se calcula siempre desde la probabilidad, para usar los tres niveles vigentes.
+            // El nivel llega calculado por la API. Si viniera con una etiqueta antigua, se deriva de la probabilidad.
             const data = recibidos.map((e: any) => ({
               ...e,
               // La API entrega la nota final dentro de "notas"; la interfaz la usa en el primer nivel.
               nota_final: Number(e.nota_final ?? e.notas?.nota_final ?? 0),
-              ultima_prediccion: { ...e.ultima_prediccion, nivel: nivelDesde(Number(e.ultima_prediccion?.probabilidad ?? 0)) },
+              ultima_prediccion: {
+                ...e.ultima_prediccion,
+                nivel: NIVELES.includes(e.ultima_prediccion?.nivel) ? e.ultima_prediccion.nivel : nivelDesde(Number(e.ultima_prediccion?.probabilidad ?? 0)),
+              },
             }));
             setEstudiantes(data);
             setOrigenDatos("api");
@@ -171,7 +186,7 @@ export default function App() {
                 estudiante: `${e.nombres} ${e.apellidos}`,
                 grado: `${e.grado} ${e.seccion}`,
                 criticidad: e.ultima_prediccion?.nivel === "Riesgo alto" ? "alto" : "medio",
-                mensaje: `${e.ultima_prediccion?.nivel} detectado: ${e.nombres} ${e.apellidos} - Nota final registrada de ${e.notas?.nota_final || e.nota_final}`,
+                mensaje: `${e.ultima_prediccion?.nivel}: ${e.nombres} ${e.apellidos}, ${e.grado}. ${e.ultima_prediccion?.motivo ?? `Promedio de ${e.notas?.nota_final ?? e.nota_final}.`}`,
                 fecha: "Recibido de la API",
                 atendida: false
               }));
@@ -582,8 +597,8 @@ export default function App() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Trimestre Activo</p>
-              <p className="text-sm font-black text-slate-800">2024 - II</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Periodo</p>
+              <p className="text-sm font-black text-slate-800">{estadoApi?.periodo_actual?.nombre ?? "Sin datos"}</p>
             </div>
             <div className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full cursor-pointer transition-all">
               <Bell className="w-5 h-5" />
@@ -598,11 +613,16 @@ export default function App() {
         <div className="bg-amber-50 border-b border-amber-200 px-8 py-2 text-[11px] text-amber-900 flex flex-wrap items-center gap-x-3 gap-y-1 shrink-0">
           <span className="font-black uppercase tracking-wider">Demostración</span>
           <span>
-            Los estudiantes y sus notas son datos de ejemplo. El modelo es de prueba: el definitivo se entrenará con datos reales del colegio en el Sprint 3.
+            {estadoApi?.tipo_datos === "reales"
+              ? "Datos reales del colegio, identificados solo por código."
+              : estadoApi?.tipo_datos === "practica"
+                ? "Datos de práctica: notas inventadas con la estructura del registro del colegio; ningún estudiante es real."
+                : "Datos de ejemplo."}{" "}
+            El nivel de riesgo sale de una regla provisional; el modelo de Machine Learning se entrena con datos reales en el Sprint 3.
           </span>
           <span className="font-semibold">
             {origenDatos === "cargando" && "Conectando con la API…"}
-            {origenDatos === "api" && "Fuente: API en línea"}
+            {origenDatos === "api" && "Fuente: base de datos, por la API"}
             {origenDatos === "local" && "Fuente: datos locales (la API no respondió)"}
           </span>
         </div>
@@ -634,24 +654,29 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Tarjeta de Nivel de Riesgo */}
                   <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Predicción del Modelo ML</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nivel de riesgo</span>
                     <div className="flex items-center justify-between">
                       <span className={`px-3 py-1.5 rounded-full text-xs font-black border ${
                         perfilSeleccionado.ultima_prediccion.nivel === "Riesgo alto" 
                           ? "bg-red-50 text-red-600 border-red-100" 
-                          : "bg-amber-50 text-amber-600 border-amber-100"
+                          : perfilSeleccionado.ultima_prediccion.nivel === "Riesgo medio"
+                            ? "bg-amber-50 text-amber-600 border-amber-100"
+                            : "bg-emerald-50 text-emerald-600 border-emerald-100"
                       }`}>
                         {perfilSeleccionado.ultima_prediccion.nivel}
                       </span>
                       <span className="text-xl font-extrabold text-slate-800">
-                        {Math.round(perfilSeleccionado.ultima_prediccion.probabilidad * 100)}% Probabilidad
+                        {perfilSeleccionado.ultima_prediccion.probabilidad == null ? "Regla provisional" : `${Math.round(perfilSeleccionado.ultima_prediccion.probabilidad * 100)}% Probabilidad`}
                       </span>
                     </div>
                     <div className="pt-2 border-t border-slate-200/60 text-xs text-slate-500 font-semibold leading-relaxed">
+                      {perfilSeleccionado.ultima_prediccion.motivo && <span className="block text-slate-700 mb-1">Motivo: {perfilSeleccionado.ultima_prediccion.motivo}</span>}
                       Sugerencia institucional: {
                         perfilSeleccionado.ultima_prediccion.nivel === "Riesgo alto"
                           ? "Activar plan de tutorías de emergencia y programar cita presencial con psicopedagogía."
-                          : "Realizar seguimiento preventivo de calificaciones de tareas."
+                          : perfilSeleccionado.ultima_prediccion.nivel === "Riesgo medio"
+                            ? "El tutor revisa el caso y hace seguimiento de las próximas evaluaciones."
+                            : "Continuar con el seguimiento regular."
                       }
                     </div>
                   </div>
@@ -674,17 +699,17 @@ export default function App() {
 
                   {/* Asistencia & Pensiones */}
                   <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Asistencia & Administrativo</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Asistencia y periodo anterior</span>
                     <div className="flex justify-between text-xs font-bold text-slate-600">
                       <span>Inasistencias:</span>
-                      <span className={perfilSeleccionado.inasistencias >= 3 ? "text-red-500 font-black" : "text-slate-800"}>
-                        {perfilSeleccionado.inasistencias} clases
+                      <span className={(perfilSeleccionado.inasistencias ?? 0) >= 3 ? "text-red-500 font-black" : "text-slate-800"}>
+                        {perfilSeleccionado.inasistencias == null ? "Sin registro digital" : `${perfilSeleccionado.inasistencias} clases`}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs font-bold text-slate-600">
-                      <span>Estado Pensión:</span>
-                      <span className={perfilSeleccionado.estado_pension === "deuda" ? "text-red-500 font-black" : "text-emerald-600"}>
-                        {perfilSeleccionado.estado_pension.toUpperCase()}
+                      <span>Promedio del periodo anterior:</span>
+                      <span className="text-slate-800">
+                        {perfilSeleccionado.promedio_anterior == null ? "Sin dato" : `${perfilSeleccionado.promedio_anterior} / 20`}
                       </span>
                     </div>
                   </div>
@@ -693,6 +718,40 @@ export default function App() {
             </div>
           ) : (
             <>
+              {/* Datos y calidad: última carga y validación automática (paquetes 1.2.1 y 1.2.2 de la EDT) */}
+              {seccionActiva === "inicio" && estadoApi && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                    <div>
+                      <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Datos y calidad</h3>
+                      <p className="text-[11px] text-slate-400">
+                        {estadoApi.estudiantes} estudiantes · {estadoApi.notas} notas · periodos: {(estadoApi.periodos ?? []).map((p: any) => p.nombre).join(", ") || "ninguno"}
+                        {estadoApi.ultima_carga ? ` · última carga: ${estadoApi.ultima_carga.archivo}` : ""}
+                      </p>
+                    </div>
+                    {calidad?.disponible && (
+                      <span className={`px-3 py-1 rounded-full text-[11px] font-black border ${calidad.criticas ? "bg-red-50 text-red-600 border-red-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"}`}>
+                        {calidad.criticas ? `${calidad.criticas} reglas críticas con fallas` : "Validación sin fallas críticas"}
+                      </span>
+                    )}
+                  </div>
+                  {calidad?.disponible ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {calidad.reglas.map((r: any) => (
+                        <div key={r.regla} className="p-3 rounded-xl border border-slate-100 bg-slate-50" title={r.detalle}>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide leading-tight">{r.regla.replace(/_/g, " ")}</p>
+                          <p className={`text-sm font-black mt-1 ${r.severidad === "critica" ? "text-red-600" : r.severidad === "aviso" ? "text-amber-600" : "text-emerald-600"}`}>
+                            {r.severidad === "correcta" ? "Correcta" : `${r.cantidad} ${r.severidad === "critica" ? "(crítica)" : "(aviso)"}`}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">Todavía no se ha ejecutado la validación de los datos.</p>
+                  )}
+                </div>
+              )}
+
               {/* Sección 1: Inicio */}
               {seccionActiva === "inicio" && (
                 <div className="space-y-8">
@@ -702,7 +761,7 @@ export default function App() {
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estudiantes registrados</p>
                         <span className="text-3xl font-black text-slate-800 mt-1 block">{estudiantes.length}</span>
-                        <p className="text-[10px] text-emerald-600 font-bold mt-1">{origenDatos === "api" ? "Recibidos de la API (ejemplo)" : "Datos locales de ejemplo"}</p>
+                        <p className="text-[10px] text-emerald-600 font-bold mt-1">{origenDatos === "api" ? "Leídos de la base de datos" : "Datos locales de ejemplo"}</p>
                       </div>
                       <div className="w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/10">
                         <Users className="w-6 h-6" />
@@ -934,7 +993,7 @@ export default function App() {
                                     {est.ultima_prediccion.nivel}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-slate-600 font-semibold">{est.inasistencias} inasistencias</td>
+                                <td className="px-6 py-4 text-slate-600 font-semibold">{est.inasistencias == null ? "Sin registro" : `${est.inasistencias} inasistencias`}</td>
                                 <td className="px-6 py-4 text-center">
                                   <button 
                                     onClick={() => setPerfilSeleccionado(est)}
@@ -1054,14 +1113,10 @@ export default function App() {
                                     {est.nota_final}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-slate-600 font-semibold">{est.inasistencias} inasistencias</td>
+                                <td className="px-6 py-4 text-slate-600 font-semibold">{est.inasistencias == null ? "Sin registro" : `${est.inasistencias} inasistencias`}</td>
                                 <td className="px-6 py-4">
-                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                                    est.estado_pension === "al_dia" 
-                                      ? "bg-emerald-50 text-emerald-700" 
-                                      : "bg-red-50 text-red-700"
-                                  }`}>
-                                    {est.estado_pension.toUpperCase()}
+                                  <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-50 text-slate-600">
+                                    {est.promedio_anterior == null ? "—" : `${est.promedio_anterior} → ${est.nota_final}`}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 text-center">

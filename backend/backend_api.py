@@ -1,511 +1,255 @@
-import os
+"""
+SIA-T: API del Sistema Inteligente de Alerta Temprana.
+
+Lee los datos de la base (PostgreSQL en producción, SQLite en pruebas y demostración).
+No devuelve datos de relleno: si la base está vacía, lo dice. El endpoint /api/estado
+informa siempre qué datos se están mostrando y de dónde sale el nivel de riesgo.
+"""
+
 import csv
 import io
 import json
-import math
-from typing import List, Optional
+import os
+from contextlib import asynccontextmanager
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Depends, Query, status
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from typing import List, Optional
+
 import joblib
 import pandas as pd
-from sqlalchemy import text
-from etl.database import SessionLocal
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 
-# Inicialización de la aplicación FastAPI
-app = FastAPI(
-    title="SIA-T Backend API",
-    description="API para el Sistema Inteligente de Alerta Temprana de Rendimiento Académico Estudiantil",
-    version="1.0.0"
-)
+from etl.cargar_notas import cargar_archivo
+from etl.database import engine
+from etl.modelo_datos import NIVELES_RIESGO, calidad_datos, cargas, crear_tablas, cursos, estudiantes, notas, periodos, predicciones
+from etl.riesgo import ORIGEN as ORIGEN_REGLA
+from etl.riesgo import VERSION_REGLA, promedios_por_periodo
+from etl.validar_datos import validar
 
-# Permitir CORS desde cualquier origen para pruebas locales (ej. puerto 3000 de React)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Definición de rutas relativas para el modelo y los reportes
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "random_forest_riesgo.pkl")
 REPORT_PATH = os.path.join(BASE_DIR, "data", "metrics_report.json")
+DATOS_PRACTICA = os.path.join(BASE_DIR, "data", "notas_practica.csv")
 
-# Esquemas de entrada y salida con Pydantic
-class StudentPredictInput(BaseModel):
-    nivel_educativo: str = Field(..., description="'primaria' o 'secundaria'")
-    nota_libro: float = Field(..., ge=0, le=20, description="Nota de cuaderno de actividades / libro (0-20)")
-    nota_cuaderno: float = Field(..., ge=0, le=20, description="Nota de cuaderno diario (0-20)")
-    nota_examen: float = Field(..., ge=0, le=20, description="Nota de examen del trimestre (0-20)")
-    conducta: float = Field(..., ge=0, le=20, description="Nota de conducta en el aula (0-20)")
-    inasistencias: int = Field(..., ge=0, description="Número de inasistencias en el trimestre")
-    estado_pension: str = Field(..., description="'al_dia', 'atraso_leve' o 'deuda'")
 
-class PredictionOutput(BaseModel):
-    probabilidad_riesgo: float
-    nivel_riesgo: str
-    mensaje_alerta: str
-    factores_criticos: List[str]
-    modelo_usado: str
+def preparar_base():
+    """Crea las tablas. Si la base está vacía y hay datos de práctica, los carga para la demostración."""
+    crear_tablas(engine)
+    with engine.connect() as cx:
+        vacia = (cx.execute(select(func.count()).select_from(estudiantes)).scalar() or 0) == 0
+    if vacia and os.path.exists(DATOS_PRACTICA) and os.getenv("CARGAR_DATOS_PRACTICA", "true").lower() == "true":
+        cargar_archivo(DATOS_PRACTICA, engine)
+        validar(engine)
 
-# Niveles de riesgo. El alcance del proyecto define tres: bajo (verde), medio (amarillo) y alto (rojo).
-# Los cortes son provisionales: se fijarán con datos de validación cuando el modelo se entrene con datos reales.
-NIVELES_RIESGO = ["Riesgo bajo", "Riesgo medio", "Riesgo alto"]
 
-def clasificar_riesgo(prob: float) -> str:
-    if prob < 0.50:
-        return "Riesgo bajo"
-    elif prob < 0.75:
-        return "Riesgo medio"
-    else:
-        return "Riesgo alto"
+@asynccontextmanager
+async def ciclo_de_vida(_: FastAPI):
+    try:
+        preparar_base()
+    except Exception as e:  # la API debe poder arrancar y explicar el problema en /api/estado
+        print(f"[SIA-T] No se pudo preparar la base de datos: {e}")
+    yield
 
-def predecir_riesgo_simulado(input_data: StudentPredictInput) -> PredictionOutput:
-    # Lógica heurística que imita un árbol de decisión/random forest basado en reglas lógicas comunes:
-    # 1. Bajas notas de examen aumentan drásticamente el riesgo.
-    # 2. Inasistencias altas (más de 3) aumentan el riesgo de forma lineal.
-    # 3. Mal comportamiento (conducta < 11) duplica el riesgo.
-    # 4. Tener deudas en las pensiones genera estrés/riesgo administrativo.
-    
-    score = 0.0
-    factores = []
-    
-    # Peso de notas (0 a 20, menor nota = mayor riesgo)
-    promedio_notas = (input_data.nota_libro + input_data.nota_cuaderno + input_data.nota_examen) / 3
-    if promedio_notas < 11.0:
-        score += 0.45
-        factores.append(f"Promedio académico insatisfactorio ({promedio_notas:.1f})")
-    elif promedio_notas < 14.0:
-        score += 0.15
-        factores.append(f"Rendimiento académico regular ({promedio_notas:.1f})")
-        
-    if input_data.nota_examen < 11.0:
-        score += 0.15
-        factores.append(f"Nota de examen desaprobatoria ({input_data.nota_examen})")
-        
-    # Peso de conducta
-    if input_data.conducta < 11.0:
-        score += 0.20
-        factores.append(f"Conducta desaprobatoria ({input_data.conducta})")
-    elif input_data.conducta < 14.0:
-        score += 0.05
-        factores.append("Conducta regular")
-        
-    # Peso de inasistencias
-    if input_data.inasistencias >= 5:
-        score += 0.25
-        factores.append(f"Inasistencias muy recurrentes ({input_data.inasistencias} clases)")
-    elif input_data.inasistencias >= 3:
-        score += 0.10
-        factores.append(f"Inasistencias en aumento ({input_data.inasistencias} clases)")
-        
-    # Peso de pensiones
-    if input_data.estado_pension == "deuda":
-        score += 0.15
-        factores.append("Atraso administrativo (Estado: deuda)")
-    elif input_data.estado_pension == "atraso_leve":
-        score += 0.05
-        factores.append("Atraso administrativo leve")
-        
-    # Limitar score entre 0.0 y 1.0
-    prob = min(max(score, 0.01), 0.99)
-    nivel = clasificar_riesgo(prob)
-    
-    mensajes = {
-        "Riesgo bajo": "Desempeño estable. Continuar con el seguimiento regular.",
-        "Riesgo medio": "Intervención oportuna sugerida. Presenta problemas notorios que requieren citación al padre de familia.",
-        "Riesgo alto": "¡ALERTA CRÍTICA! Se requiere plan de tutoría inmediato y consejería psicopedagógica urgente."
-    }
-    
-    return PredictionOutput(
-        probabilidad_riesgo=round(prob, 3),
-        nivel_riesgo=nivel,
-        mensaje_alerta=mensajes[nivel],
-        factores_criticos=factores if factores else ["Ninguno detectado"],
-        modelo_usado="Reglas Heurísticas SIA-T (Fallback)"
-    )
 
-# Endpoints
+app = FastAPI(
+    title="SIA-T Backend API",
+    description="API del Sistema Inteligente de Alerta Temprana del bajo rendimiento académico",
+    version="2.0.0",
+    lifespan=ciclo_de_vida,
+)
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"])
+
+
+# ───────────────────────── Estado ─────────────────────────
 @app.get("/")
-def read_root():
-    return {
-        "app": "SIA-T - Sistema Inteligente de Alerta Temprana",
-        "estado": "Servidor funcionando correctamente",
-        "fecha_servidor": datetime.now().isoformat(),
-        "modelo_cargado": os.path.exists(MODEL_PATH)
-    }
+def raiz():
+    return {"app": "SIA-T - Sistema Inteligente de Alerta Temprana", "estado": "Servidor funcionando", "fecha_servidor": datetime.now().isoformat(), "documentacion": "/docs"}
 
-def contar_estudiantes_bd() -> int:
-    """Número de estudiantes en la base de datos; 0 si está vacía o no responde."""
-    try:
-        db = SessionLocal()
-        try:
-            return int(db.execute(text("SELECT COUNT(*) FROM estudiantes")).scalar() or 0)
-        finally:
-            db.close()
-    except Exception:
-        return 0
 
-@app.get("/api/estado", summary="Indica qué es real y qué es de ejemplo en esta instalación")
+@app.get("/api/estado", summary="Qué datos se muestran y de dónde sale el nivel de riesgo")
 def obtener_estado():
-    """
-    Informa de dónde salen los datos que entrega la API, para que la interfaz no presente
-    datos de ejemplo como si fueran reales.
-    """
-    en_bd = contar_estudiantes_bd()
+    try:
+        with engine.connect() as cx:
+            n_est = cx.execute(select(func.count()).select_from(estudiantes)).scalar() or 0
+            n_notas = cx.execute(select(func.count()).select_from(notas)).scalar() or 0
+            lista_periodos = [{"codigo": c, "nombre": n} for c, n in cx.execute(select(periodos.c.codigo, periodos.c.nombre).order_by(periodos.c.codigo))]
+            ultima = cx.execute(select(cargas).order_by(cargas.c.id.desc())).mappings().first()
+        base = {"conectada": True}
+    except Exception as e:
+        n_est = n_notas = 0
+        lista_periodos, ultima = [], None
+        base = {"conectada": False, "error": str(e)}
     return {
-        "origen_datos": "base_de_datos" if en_bd > 0 else "ejemplo",
-        "estudiantes_en_bd": en_bd,
-        "modelo_cargado": os.path.exists(MODEL_PATH),
-        "modelo": "Random Forest de demostración, entrenado con un conjunto de datos sintético",
+        "base_de_datos": base,
+        "origen_datos": "base_de_datos" if n_est else "sin_datos",
+        "tipo_datos": ultima["tipo_datos"] if ultima else None,
+        "estudiantes": n_est,
+        "notas": n_notas,
+        "periodos": lista_periodos,
+        "periodo_actual": lista_periodos[-1] if lista_periodos else None,
+        "ultima_carga": {"fecha": str(ultima["fecha"]), "archivo": ultima["archivo"], "notas_cargadas": ultima["notas_cargadas"]} if ultima else None,
+        "nivel_de_riesgo": {
+            "origen": ORIGEN_REGLA,
+            "version": VERSION_REGLA,
+            "explicacion": "Regla provisional y transparente. El modelo de Machine Learning se entrena y valida con datos reales en el Sprint 3.",
+        },
+        "modelo_demostracion_cargado": os.path.exists(MODEL_PATH),
         "metricas_disponibles": os.path.exists(REPORT_PATH),
-        "niveles_riesgo": NIVELES_RIESGO,
+        "niveles_riesgo": list(NIVELES_RIESGO),
     }
 
-@app.post("/api/predecir", response_model=PredictionOutput, summary="Realiza la predicción de riesgo para un estudiante")
-def predecir_riesgo(input_data: StudentPredictInput):
-    """
-    Recibe las variables académicas, conductuales y administrativas de un estudiante
-    y evalúa su nivel de riesgo de deserción utilizando el modelo Random Forest entrenado (.pkl).
-    """
-    if not os.path.exists(MODEL_PATH):
-        # Si el modelo pkl no se encuentra, usamos la simulación heurística para que la app no falle.
-        # Esto permite que el prototipo siga siendo 100% funcional.
-        return predecir_riesgo_simulado(input_data)
-        
-    try:
-        # Carga del modelo y metadatos
-        saved_pack = joblib.load(MODEL_PATH)
-        model = saved_pack["model"]
-        features = saved_pack["features"]
-        encoding = saved_pack.get("encoding", {})
-        
-        # Mapeo/codificación de variables categóricas
-        nivel_val = encoding.get("nivel_educativo", {"primaria": 0, "secundaria": 1}).get(input_data.nivel_educativo.lower(), 1)
-        pension_val = encoding.get("estado_pension", {"al_dia": 0, "atraso_leve": 1, "deuda": 2}).get(input_data.estado_pension.lower(), 0)
-        
-        # Crear DataFrame con los nombres de características del modelo
-        df_input = pd.DataFrame([{
-            "nivel_educativo": nivel_val,
-            "nota_libro": input_data.nota_libro,
-            "nota_cuaderno": input_data.nota_cuaderno,
-            "nota_examen": input_data.nota_examen,
-            "conducta": input_data.conducta,
-            "inasistencias": input_data.inasistencias,
-            "estado_pension": pension_val
-        }])
-        
-        # Reordenar columnas para que coincidan con las características de entrenamiento
-        df_input = df_input[features]
-        
-        # Predicción de probabilidades
-        # Clase 1 representa "En riesgo"
-        prob = float(model.predict_proba(df_input)[0][1])
-        nivel = clasificar_riesgo(prob)
-        
-        # Analizar factores críticos
-        factores = []
-        promedio = (input_data.nota_libro + input_data.nota_cuaderno + input_data.nota_examen) / 3
-        if promedio < 11.0:
-            factores.append(f"Bajo promedio académico ({promedio:.1f})")
-        if input_data.conducta < 11.0:
-            factores.append(f"Baja nota de conducta ({input_data.conducta:.1f})")
-        if input_data.inasistencias >= 3:
-            factores.append(f"Frecuencia de inasistencias ({input_data.inasistencias})")
-        if input_data.estado_pension == "deuda":
-            factores.append("Pensión atrasada")
-            
-        mensajes = {
-            "Riesgo bajo": "Desempeño estable. Continuar con el seguimiento regular.",
-            "Riesgo medio": "Se recomienda citación a reunión presencial de tutoría.",
-            "Riesgo alto": "Alerta: riesgo alto de bajo rendimiento. Requiere atención del tutor esta semana."
-        }
-        
-        return PredictionOutput(
-            probabilidad_riesgo=round(prob, 3),
-            nivel_riesgo=nivel,
-            mensaje_alerta=mensajes[nivel],
-            factores_criticos=factores if factores else ["Ninguno detectado"],
-            modelo_usado="RandomForestClassifier (.pkl)"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al ejecutar la predicción con el modelo PKL: {str(e)}. Iniciando simulación de fallback..."
-        )
 
-# Estudiantes de ejemplo (ficticios). Se devuelven solo cuando la base de datos está vacía o no responde;
-# el endpoint /api/estado informa cuál es el origen de los datos.
-MOCK_STUDENTS = [
-    {
-        "id": 1,
-        "codigo_anonimizado": "A001",
-        "nombres": "María Fernanda",
-        "apellidos": "López",
-        "grado": "3° Secundaria",
-        "seccion": "A",
-        "nivel_educativo": "secundaria",
-        "notas": {"nota_libro": 10.5, "nota_cuaderno": 11.0, "nota_examen": 9.0, "conducta": 13.0, "nota_final": 10.1},
-        "inasistencias": 2,
-        "estado_pension": "al_dia",
-        "ultima_prediccion": {"probabilidad": 0.82, "nivel": "Riesgo alto", "fecha": "2026-07-01T10:30:00"}
-    },
-    {
-        "id": 2,
-        "codigo_anonimizado": "A002",
-        "nombres": "Juan Diego",
-        "apellidos": "Martínez",
-        "grado": "2° Secundaria",
-        "seccion": "B",
-        "nivel_educativo": "secundaria",
-        "notas": {"nota_libro": 11.0, "nota_cuaderno": 10.0, "nota_examen": 11.0, "conducta": 10.5, "nota_final": 10.6},
-        "inasistencias": 4,
-        "estado_pension": "atraso_leve",
-        "ultima_prediccion": {"probabilidad": 0.68, "nivel": "Riesgo medio", "fecha": "2026-07-01T09:15:00"}
-    },
-    {
-        "id": 3,
-        "codigo_anonimizado": "A003",
-        "nombres": "Ana Sofía",
-        "apellidos": "Vargas",
-        "grado": "1° Secundaria",
-        "seccion": "A",
-        "nivel_educativo": "secundaria",
-        "notas": {"nota_libro": 13.0, "nota_cuaderno": 11.5, "nota_examen": 12.0, "conducta": 14.0, "nota_final": 12.1},
-        "inasistencias": 6,
-        "estado_pension": "al_dia",
-        "ultima_prediccion": {"probabilidad": 0.35, "nivel": "Riesgo bajo", "fecha": "2026-06-30T16:45:00"}
-    },
-    {
-        "id": 4,
-        "codigo_anonimizado": "A004",
-        "nombres": "Luis Antonio",
-        "apellidos": "Pérez",
-        "grado": "3° Secundaria",
-        "seccion": "C",
-        "nivel_educativo": "secundaria",
-        "notas": {"nota_libro": 12.5, "nota_cuaderno": 12.0, "nota_examen": 11.5, "conducta": 11.0, "nota_final": 12.0},
-        "inasistencias": 1,
-        "estado_pension": "deuda",
-        "ultima_prediccion": {"probabilidad": 0.42, "nivel": "Riesgo bajo", "fecha": "2026-07-01T11:05:00"}
-    },
-    {
-        "id": 5,
-        "codigo_anonimizado": "A005",
-        "nombres": "Camila Torres",
-        "apellidos": "Ruiz",
-        "grado": "2° Secundaria",
-        "seccion": "A",
-        "nivel_educativo": "secundaria",
-        "notas": {"nota_libro": 16.0, "nota_cuaderno": 15.5, "nota_examen": 17.0, "conducta": 18.0, "nota_final": 16.1},
-        "inasistencias": 0,
-        "estado_pension": "al_dia",
-        "ultima_prediccion": {"probabilidad": 0.05, "nivel": "Riesgo bajo", "fecha": "2026-07-02T08:00:00"}
-    }
-]
+# ───────────────────────── Estudiantes ─────────────────────────
+def _redondear(valor):
+    return None if valor is None else round(valor, 1)
 
-def filtrar_estudiantes_locales(estudiantes_lista, grado=None, nivel_riesgo=None):
-    filtrados = estudiantes_lista
-    if grado:
-        filtrados = [e for e in filtrados if e["grado"].lower() == grado.lower()]
-    if nivel_riesgo:
-        filtrados = [e for e in filtrados if e["ultima_prediccion"]["nivel"].lower() == nivel_riesgo.lower()]
-    return filtrados
 
-@app.get("/api/estudiantes", summary="Lista todos los estudiantes con sus métricas")
+@app.get("/api/estudiantes", summary="Estudiantes (por código) con sus promedios y su nivel de riesgo en el último periodo")
 def listar_estudiantes(grado: Optional[str] = None, nivel_riesgo: Optional[str] = None):
-    """
-    Retorna la lista de estudiantes registrados de la base de datos (PostgreSQL/SQLite).
-    Si la base de datos está vacía o hay algún error de conexión, cae automáticamente en MOCK_STUDENTS.
-    """
-    try:
-        db = SessionLocal()
-        # Verificar si hay estudiantes en la base de datos
-        res_count = db.execute(text("SELECT COUNT(*) FROM estudiantes")).scalar()
-        if not res_count or res_count == 0:
-            db.close()
-            return filtrar_estudiantes_locales(MOCK_STUDENTS, grado, nivel_riesgo)
-            
-        # Consulta SQL para unir datos de estudiantes, notas, asistencia, pensiones y última predicción
-        query = text("""
-            SELECT 
-                e.id,
-                e.codigo_anonimizado,
-                e.nombres,
-                e.apellidos,
-                e.grado,
-                e.seccion,
-                e.nivel_educativo,
-                n.nota_libro,
-                n.nota_cuaderno,
-                n.nota_examen,
-                n.conducta,
-                n.nota_final,
-                a.inasistencias,
-                p.estado_pension,
-                pr.probabilidad_riesgo,
-                pr.nivel_riesgo,
-                pr.fecha_prediccion
-            FROM estudiantes e
-            LEFT JOIN notas n ON e.id = n.estudiante_id
-            LEFT JOIN asistencia a ON e.id = a.estudiante_id
-            LEFT JOIN pensiones p ON e.id = p.estudiante_id
-            LEFT JOIN (
-                SELECT pr1.estudiante_id, pr1.probabilidad_riesgo, pr1.nivel_riesgo, pr1.fecha_prediccion
-                FROM predicciones pr1
-                INNER JOIN (
-                    SELECT estudiante_id, MAX(fecha_prediccion) as max_fecha
-                    FROM predicciones
-                    GROUP BY estudiante_id
-                ) pr2 ON pr1.estudiante_id = pr2.estudiante_id AND pr1.fecha_prediccion = pr2.max_fecha
-            ) pr ON e.id = pr.estudiante_id
-            ORDER BY e.codigo_anonimizado ASC
-        """)
-        
-        result = db.execute(query).mappings().all()
-        db.close()
-        
-        real_students = []
-        for row in result:
-            n_libro = float(row["nota_libro"]) if row["nota_libro"] is not None else 12.0
-            n_cuaderno = float(row["nota_cuaderno"]) if row["nota_cuaderno"] is not None else 12.0
-            n_examen = float(row["nota_examen"]) if row["nota_examen"] is not None else 12.0
-            cond = float(row["conducta"]) if row["conducta"] is not None else 12.0
-            
-            # Si nota_final no está en la base, la calculamos como promedio de libro, cuaderno y examen
-            if row["nota_final"] is not None:
-                n_final = float(row["nota_final"])
-            else:
-                n_final = round((n_libro + n_cuaderno + n_examen) / 3.0, 1)
-                
-            inasist = int(row["inasistencias"]) if row["inasistencias"] is not None else 0
-            est_pension = row["estado_pension"] if row["estado_pension"] is not None else "al_dia"
-            
-            prob = row["probabilidad_riesgo"]
-            nivel = row["nivel_riesgo"]
-            fecha_pred = row["fecha_prediccion"]
-            
-            # Si el estudiante no tiene una predicción grabada en la BD, la calculamos on-the-fly
-            if prob is None or nivel is None:
-                inp = StudentPredictInput(
-                    nivel_educativo=row["nivel_educativo"],
-                    nota_libro=n_libro,
-                    nota_cuaderno=n_cuaderno,
-                    nota_examen=n_examen,
-                    conducta=cond,
-                    inasistencias=inasist,
-                    estado_pension=est_pension
-                )
-                pred = predecir_riesgo_simulado(inp)
-                prob = pred.probabilidad_riesgo
-                nivel = pred.nivel_riesgo
-                fecha_pred = datetime.now()
-                
-            prob = float(prob)
-            nivel = clasificar_riesgo(prob)
-            if isinstance(fecha_pred, datetime):
-                fecha_pred = fecha_pred.isoformat()
-            elif not fecha_pred:
-                fecha_pred = datetime.now().isoformat()
-                
-            real_students.append({
-                "id": row["id"],
-                "codigo_anonimizado": row["codigo_anonimizado"],
-                "nombres": row["nombres"] or "Sin nombre",
-                "apellidos": row["apellidos"] or "",
-                "grado": row["grado"],
-                "seccion": row["seccion"] or "A",
-                "nivel_educativo": row["nivel_educativo"],
-                "notas": {
-                    "nota_libro": n_libro,
-                    "nota_cuaderno": n_cuaderno,
-                    "nota_examen": n_examen,
-                    "conducta": cond,
-                    "nota_final": n_final
-                },
-                "inasistencias": inasist,
-                "estado_pension": est_pension,
-                "ultima_prediccion": {
-                    "probabilidad": prob,
-                    "nivel": nivel,
-                    "fecha": str(fecha_pred)
+    with engine.connect() as cx:
+        codigos_periodo = [c for (c,) in cx.execute(select(periodos.c.codigo).order_by(periodos.c.codigo))]
+        if not codigos_periodo:
+            return []
+        actual = codigos_periodo[-1]
+        anterior = codigos_periodo[-2] if len(codigos_periodo) > 1 else None
+        promedios = promedios_por_periodo(cx)
+        niveles = {
+            fila.estudiante_id: fila
+            for fila in cx.execute(
+                select(predicciones.c.estudiante_id, predicciones.c.nivel_riesgo, predicciones.c.probabilidad, predicciones.c.origen, predicciones.c.motivo, predicciones.c.fecha)
+                .select_from(predicciones.join(periodos))
+                .where(periodos.c.codigo == actual)
+            )
+        }
+        resultado = []
+        for est in cx.execute(select(estudiantes).order_by(estudiantes.c.grado, estudiantes.c.codigo)).mappings():
+            p = promedios.get(est["id"], {}).get(actual)
+            nivel = niveles.get(est["id"])
+            if not p or not nivel:
+                continue
+            previo = promedios.get(est["id"], {}).get(anterior) if anterior else None
+            resultado.append(
+                {
+                    "id": est["id"],
+                    "codigo_anonimizado": est["codigo"],
+                    # La base no guarda nombres: la interfaz muestra el código.
+                    "nombres": "Estudiante",
+                    "apellidos": est["codigo"],
+                    "grado": est["grado"],
+                    "seccion": "Única",
+                    "nivel_educativo": est["nivel_educativo"],
+                    "periodo": actual,
+                    "notas": {
+                        "nota_libro": _redondear(p["libro"]),
+                        "nota_cuaderno": _redondear(p["cuaderno"]),
+                        "nota_examen": _redondear(p["examen"]),
+                        "conducta": _redondear(p["conducta"]),
+                        "nota_final": _redondear(p["promedio"]),
+                    },
+                    "nota_final": _redondear(p["promedio"]),
+                    "promedio_anterior": _redondear(previo["promedio"]) if previo else None,
+                    "inasistencias": None,  # la asistencia aún no se registra en formato digital
+                    "estado_pension": "no_registrado",  # variable retirada de los datos
+                    "ultima_prediccion": {
+                        "probabilidad": nivel.probabilidad,
+                        "nivel": nivel.nivel_riesgo,
+                        "origen": nivel.origen,
+                        "motivo": nivel.motivo,
+                        "fecha": str(nivel.fecha),
+                    },
                 }
-            })
-            
-        return filtrar_estudiantes_locales(real_students, grado, nivel_riesgo)
-        
-    except Exception as e:
-        print(f"[BD Connect] Error al cargar estudiantes de la BD (Usando fallback): {str(e)}")
-        return filtrar_estudiantes_locales(MOCK_STUDENTS, grado, nivel_riesgo)
+            )
+    if grado:
+        resultado = [e for e in resultado if e["grado"].lower() == grado.lower()]
+    if nivel_riesgo:
+        resultado = [e for e in resultado if e["ultima_prediccion"]["nivel"].lower() == nivel_riesgo.lower()]
+    return resultado
 
-@app.get("/api/exportar-csv", summary="Exporta la base de datos unificada en formato CSV para entrenamiento en Colab")
+
+@app.get("/api/estudiantes/{codigo}", summary="Ficha de un estudiante: notas por curso y periodo")
+def ficha_estudiante(codigo: str):
+    with engine.connect() as cx:
+        est = cx.execute(select(estudiantes).where(estudiantes.c.codigo == codigo)).mappings().first()
+        if not est:
+            raise HTTPException(status_code=404, detail="No existe un estudiante con ese código.")
+        filas = cx.execute(
+            select(periodos.c.codigo, cursos.c.nombre, notas.c.componente, notas.c.nota)
+            .select_from(notas.join(periodos).join(cursos))
+            .where(notas.c.estudiante_id == est["id"])
+            .order_by(periodos.c.codigo, cursos.c.nombre)
+        ).all()
+        historial = cx.execute(
+            select(periodos.c.codigo, predicciones.c.nivel_riesgo, predicciones.c.origen, predicciones.c.motivo)
+            .select_from(predicciones.join(periodos))
+            .where(predicciones.c.estudiante_id == est["id"])
+            .order_by(periodos.c.codigo)
+        ).all()
+    por_curso = {}
+    for periodo, curso, componente, nota in filas:
+        por_curso.setdefault((periodo, curso), {"periodo": periodo, "curso": curso})[componente] = nota
+    return {
+        "codigo": est["codigo"],
+        "grado": est["grado"],
+        "nivel_educativo": est["nivel_educativo"],
+        "notas": list(por_curso.values()),
+        "riesgo": [{"periodo": p, "nivel": n, "origen": o, "motivo": m} for p, n, o, m in historial],
+    }
+
+
+# ───────────────────────── Datos: cargas, calidad y exportación ─────────────────────────
+@app.get("/api/cargas", summary="Bitácora de cargas de datos")
+def listar_cargas():
+    with engine.connect() as cx:
+        return [{**fila, "fecha": str(fila["fecha"])} for fila in cx.execute(select(cargas).order_by(cargas.c.id.desc())).mappings()]
+
+
+@app.get("/api/calidad", summary="Resultado de la última validación automática de los datos")
+def ultima_validacion():
+    with engine.connect() as cx:
+        ultima = cx.execute(select(func.max(calidad_datos.c.fecha))).scalar()
+        if ultima is None:
+            return {"disponible": False, "mensaje": "Todavía no se ha ejecutado la validación."}
+        reglas = [dict(f) for f in cx.execute(select(calidad_datos.c.regla, calidad_datos.c.severidad, calidad_datos.c.cantidad, calidad_datos.c.detalle).where(calidad_datos.c.fecha == ultima)).mappings()]
+        ejecuciones = cx.execute(select(func.count(func.distinct(calidad_datos.c.fecha)))).scalar()
+    return {
+        "disponible": True,
+        "fecha": str(ultima),
+        "ejecuciones": ejecuciones,
+        "criticas": sum(1 for r in reglas if r["severidad"] == "critica"),
+        "avisos": sum(1 for r in reglas if r["severidad"] == "aviso"),
+        "reglas": reglas,
+    }
+
+
+@app.post("/api/calidad/ejecutar", summary="Ejecuta ahora la validación de los datos")
+def ejecutar_validacion():
+    return validar(engine)
+
+
+@app.get("/api/exportar-csv", summary="Exporta las notas de la base (por código, sin nombres) para entrenar el modelo")
 def exportar_csv():
-    """
-    Une lógicamente las tablas de estudiantes, notas, asistencia y pensiones para generar
-    el archivo CSV unificado 'export_trimestre_actual.csv'. Este archivo es descargado
-    directamente y sirve de insumo para el reentrenamiento semanal/trimestral en Colab.
-    """
-    output = io.StringIO()
-    writer = csv.writer(output)
-    
-    # Escribir cabecera (features idénticas a las del notebook de Colab)
-    writer.writerow([
-        "id_alumno", "grado", "nivel_educativo", "nota_libro", 
-        "nota_cuaderno", "nota_examen", "conducta", 
-        "inasistencias", "estado_pension", "riesgo_academico"
-    ])
-    
-    # Generar datos simulados consistentes basados en la base de datos
-    for est in MOCK_STUDENTS:
-        # Determinar riesgo académico real (0: Sin riesgo o Bajo, 1: Medio o Alto)
-        nivel = est["ultima_prediccion"]["nivel"]
-        riesgo_academico = 1 if nivel in ["Riesgo medio", "Riesgo alto"] else 0
-        
-        writer.writerow([
-            est["codigo_anonimizado"],
-            est["grado"],
-            est["nivel_educativo"],
-            est["notas"]["nota_libro"],
-            est["notas"]["nota_cuaderno"],
-            est["notas"]["nota_examen"],
-            est["notas"]["conducta"],
-            est["inasistencias"],
-            est["estado_pension"],
-            riesgo_academico
-        ])
-        
-    # Añadir 5 registros adicionales para darle cuerpo al archivo de exportación
-    registros_extra = [
-        ["A006", "1° Secundaria", "secundaria", 15.0, 14.5, 14.0, 16.0, 1, "al_dia", 0],
-        ["A007", "4° Primaria", "primaria", 9.0, 10.0, 8.5, 12.0, 5, "atraso_leve", 1],
-        ["A008", "5° Primaria", "primaria", 14.5, 13.0, 15.0, 15.5, 2, "al_dia", 0],
-        ["A009", "3° Secundaria", "secundaria", 8.0, 7.5, 6.0, 9.0, 8, "deuda", 1],
-        ["A010", "2° Secundaria", "secundaria", 11.5, 12.0, 11.0, 12.5, 3, "al_dia", 0],
-    ]
-    for r in registros_extra:
-        writer.writerow(r)
-        
-    # Preparar el StreamingResponse para descarga directa del CSV
-    output.seek(0)
-    response = StreamingResponse(
-        io.BytesIO(output.getvalue().encode("utf-8")),
-        media_type="text/csv"
-    )
-    response.headers["Content-Disposition"] = "attachment; filename=export_trimestre_actual.csv"
-    return response
+    salida = io.StringIO()
+    w = csv.writer(salida)
+    w.writerow(["codigo", "grado", "nivel", "curso", "periodo", "componente", "nota"])
+    with engine.connect() as cx:
+        consulta = (
+            select(estudiantes.c.codigo, estudiantes.c.grado, estudiantes.c.nivel_educativo, cursos.c.nombre, periodos.c.codigo, notas.c.componente, notas.c.nota)
+            .select_from(notas.join(estudiantes).join(cursos).join(periodos))
+            .order_by(estudiantes.c.codigo, periodos.c.codigo, cursos.c.nombre)
+        )
+        w.writerows(cx.execute(consulta).all())
+    respuesta = StreamingResponse(io.BytesIO(salida.getvalue().encode("utf-8")), media_type="text/csv")
+    respuesta.headers["Content-Disposition"] = "attachment; filename=notas_sia_t.csv"
+    return respuesta
 
-@app.get("/api/reporte-metricas", summary="Retorna el reporte de métricas de desempeño del modelo")
+
+@app.get("/api/reporte-metricas", summary="Métricas del último entrenamiento del modelo, si existen")
 def obtener_reporte_metricas():
-    """
-    Retorna el reporte de métricas del último entrenamiento, si existe (data/metrics_report.json).
-    No devuelve valores por defecto: si no hay reporte, lo indica.
-    """
-    # Solo se informan métricas que provienen de un entrenamiento real.
+    """No devuelve valores por defecto: si no hay reporte de un entrenamiento real, lo indica."""
     if os.path.exists(REPORT_PATH):
         try:
             with open(REPORT_PATH, "r", encoding="utf-8") as archivo:
@@ -514,9 +258,80 @@ def obtener_reporte_metricas():
             return reporte
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"No se pudo leer el reporte de métricas: {str(e)}")
-
     return {
         "disponible": False,
-        "mensaje": "Todavía no hay un reporte de métricas. El modelo actual es de demostración y se entrenó con datos sintéticos; "
-                   "las métricas se publicarán cuando se entrene y valide con datos reales del colegio.",
+        "mensaje": "Todavía no hay un reporte de métricas. El modelo se entrenará y validará con datos reales del colegio en el Sprint 3.",
     }
+
+
+# ───────────────────────── Simulador (modelo de demostración) ─────────────────────────
+class StudentPredictInput(BaseModel):
+    nivel_educativo: str = Field(..., description="'primaria' o 'secundaria'")
+    nota_libro: float = Field(..., ge=0, le=20)
+    nota_cuaderno: float = Field(..., ge=0, le=20)
+    nota_examen: float = Field(..., ge=0, le=20)
+    conducta: float = Field(..., ge=0, le=20)
+    inasistencias: int = Field(..., ge=0)
+    estado_pension: str = Field("al_dia", description="El modelo de demostración aún la requiere; se retirará al reentrenar")
+
+
+class PredictionOutput(BaseModel):
+    probabilidad_riesgo: float
+    nivel_riesgo: str
+    mensaje_alerta: str
+    factores_criticos: List[str]
+    modelo_usado: str
+
+
+MENSAJES = {
+    "Riesgo bajo": "Desempeño estable. Continuar con el seguimiento regular.",
+    "Riesgo medio": "Se recomienda que el tutor revise el caso.",
+    "Riesgo alto": "Alerta: riesgo alto de bajo rendimiento. Requiere atención del tutor esta semana.",
+}
+
+
+def clasificar_riesgo(prob: float) -> str:
+    """Cortes provisionales del modelo de demostración: menos de 0.50, bajo; de 0.50 a 0.75, medio; 0.75 o más, alto."""
+    return "Riesgo bajo" if prob < 0.50 else "Riesgo medio" if prob < 0.75 else "Riesgo alto"
+
+
+@app.post("/api/predecir", response_model=PredictionOutput, summary="Simulador: calcula el riesgo de un caso con el modelo de demostración")
+def predecir_riesgo(entrada: StudentPredictInput):
+    """
+    Usa el Random Forest de demostración, entrenado con un conjunto de datos sintético. Sirve para mostrar
+    el flujo de predicción; no es el modelo definitivo ni se usa para el nivel de riesgo de los estudiantes.
+    """
+    if not os.path.exists(MODEL_PATH):
+        raise HTTPException(status_code=503, detail="El modelo de demostración no está disponible en este servidor.")
+    try:
+        paquete = joblib.load(MODEL_PATH)
+        codificacion = paquete.get("encoding", {})
+        fila = {
+            "nivel_educativo": codificacion.get("nivel_educativo", {"primaria": 0, "secundaria": 1}).get(entrada.nivel_educativo.lower(), 1),
+            "nota_libro": entrada.nota_libro,
+            "nota_cuaderno": entrada.nota_cuaderno,
+            "nota_examen": entrada.nota_examen,
+            "conducta": entrada.conducta,
+            "inasistencias": entrada.inasistencias,
+            "estado_pension": codificacion.get("estado_pension", {"al_dia": 0, "atraso_leve": 1, "deuda": 2}).get(entrada.estado_pension.lower(), 0),
+        }
+        prob = float(paquete["model"].predict_proba(pd.DataFrame([fila])[paquete["features"]])[0][1])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"No se pudo ejecutar el modelo de demostración: {str(e)}")
+
+    factores = []
+    promedio = (entrada.nota_libro + entrada.nota_cuaderno + entrada.nota_examen) / 3
+    if promedio < 11:
+        factores.append(f"Bajo promedio académico ({promedio:.1f})")
+    if entrada.conducta < 11:
+        factores.append(f"Baja nota de conducta ({entrada.conducta:.1f})")
+    if entrada.inasistencias >= 3:
+        factores.append(f"Frecuencia de inasistencias ({entrada.inasistencias})")
+    nivel = clasificar_riesgo(prob)
+    return PredictionOutput(
+        probabilidad_riesgo=round(prob, 3),
+        nivel_riesgo=nivel,
+        mensaje_alerta=MENSAJES[nivel],
+        factores_criticos=factores or ["Ninguno detectado"],
+        modelo_usado="Random Forest de demostración (datos sintéticos)",
+    )

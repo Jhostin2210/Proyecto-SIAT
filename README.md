@@ -6,41 +6,51 @@ Prototipo del sistema de alerta temprana del bajo rendimiento académico para la
 - API: https://proyecto-siat.onrender.com (documentación en `/docs`; al estar en un plan gratuito, la primera respuesta puede tardar cerca de un minuto)
 - Documentación de gestión del proyecto: https://peruano-frances-gti.vercel.app
 
-## Estado: demostración
+## Estado
 
-Este repositorio muestra el flujo completo del sistema —datos, modelo, nivel de riesgo y pantalla—, pero todavía con datos de ejemplo.
+El sistema lee una base de datos, carga el registro de notas del colegio, valida los datos cada noche y muestra el nivel de riesgo de cada estudiante.
 
 | Qué | Estado |
 |---|---|
-| Pantallas (inicio, estudiantes, riesgos y simulador) | Funcionan |
-| API y carga del modelo | Funcionan |
-| Estudiantes y notas | **De ejemplo** (ficticios); la base de datos está vacía |
-| Modelo | **De demostración**: Random Forest entrenado con un conjunto de datos sintético |
-| Métricas del modelo | No hay: se publicarán cuando se entrene con datos reales |
-| Carga de datos del colegio, alertas por correo, usuarios y roles | Pendientes |
+| Base de datos (11 tablas) y carga del registro de notas | Construidas y probadas con el registro real, en local |
+| Validación automática de los datos | Construida; se ejecuta cada noche |
+| Pantallas (inicio, estudiantes, ficha, riesgos y simulador) | Funcionan con los datos de la base |
+| Datos de la demostración pública | **De práctica**: notas inventadas con la estructura del registro real. Los datos reales no se publican sin el consentimiento de los apoderados |
+| Nivel de riesgo | **Regla provisional**, visible como tal. El modelo se entrena y valida con datos reales en el Sprint 3 |
+| Simulador | Usa un modelo de demostración entrenado con datos sintéticos |
+| Alertas por correo, usuarios y roles | Pendientes (Sprint 4) |
 
-El modelo definitivo se entrena y valida con datos reales del colegio en el Sprint 3 del cronograma. `GET /api/estado` informa en todo momento de dónde salen los datos.
+`GET /api/estado` informa en todo momento qué datos se muestran y de dónde sale el nivel de riesgo.
+
+Más detalle en [docs/arquitectura.md](docs/arquitectura.md), [docs/datos-y-variables.md](docs/datos-y-variables.md) y [docs/pruebas-sprint-2.md](docs/pruebas-sprint-2.md).
 
 ## Niveles de riesgo
 
-Tres niveles, como define el alcance del proyecto. Los cortes son provisionales.
+Tres niveles, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo).
 
-| Nivel | Probabilidad del modelo | Color |
-|---|---|---|
-| Riesgo bajo | menos de 0.50 | Verde |
-| Riesgo medio | de 0.50 a 0.75 | Amarillo |
-| Riesgo alto | 0.75 o más | Rojo |
+Mientras no haya un modelo validado se usa esta regla provisional, con las notas de libro, cuaderno y examen del periodo:
+
+| Nivel | Regla |
+|---|---|
+| Riesgo alto | Promedio general menor de 11, o promedio de exámenes menor de 9 |
+| Riesgo medio | Promedio de exámenes menor de 11, o caída de 2 puntos o más frente al periodo anterior |
+| Riesgo bajo | Los demás casos |
 
 ## Estructura
 
 | Carpeta | Contenido |
 |---|---|
 | `src/` | Página web (Vite + React + Tailwind). Es la que está publicada. |
-| `backend/backend_api.py` | API (FastAPI): estudiantes, predicción, estado y métricas. |
-| `backend/models/` | Modelo entrenado (`.pkl`). |
-| `backend/data/` | Conjunto de datos sintético usado para el modelo de demostración. |
-| `backend/database/schema.sql` | Esquema de la base de datos (PostgreSQL). |
-| `backend/etl/` | Conexión a la base y borradores de los procesos de carga. |
+| `backend/backend_api.py` | API (FastAPI). |
+| `backend/etl/modelo_datos.py` | Definición de las tablas. |
+| `backend/etl/leer_registro.py`, `cargar_notas.py` | Lectura del registro de notas, anonimización y carga. |
+| `backend/etl/validar_datos.py` | Reglas de calidad de los datos. |
+| `backend/etl/riesgo.py` | Regla provisional del nivel de riesgo. |
+| `backend/etl/generar_datos_practica.py`, `backend/data/notas_practica.csv` | Datos de práctica de la demostración. |
+| `backend/database/schema.sql` | El mismo esquema en SQL de PostgreSQL. |
+| `backend/models/` | Modelo de demostración del simulador. |
+| `.github/workflows/` | Validación nocturna de los datos. |
+| `docs/` | Arquitectura, datos y variables, y pruebas. |
 | `frontend/` | Borrador anterior en Next.js; no está en uso. |
 
 ## Ejecutarlo en tu equipo
@@ -70,15 +80,31 @@ Queda en http://localhost:3000. Por defecto consulta la API en línea. Para usar
 VITE_API_URL=http://localhost:8000
 ```
 
+## Cargar y validar datos
+
+Desde `backend`, con el entorno activo:
+
+```powershell
+python -m etl.cargar_notas "rutaalegistro de notas.xlsx"   # registro del colegio: reemplaza nombres por códigos
+python -m etl.validar_datos                                   # reglas de calidad
+python -m etl.generar_datos_practica                          # vuelve a crear los datos de práctica
+```
+
+La relación entre nombres y códigos se guarda en `backend/data/privado/`, que no se sube al repositorio. Para cargar en una base aparte, define antes `SQLITE_PATH`; para usar PostgreSQL, las variables descritas en [docs/arquitectura.md](docs/arquitectura.md).
+
 ## Endpoints de la API
 
 | Método y ruta | Qué hace |
 |---|---|
-| `GET /api/estado` | Origen de los datos, si el modelo está cargado y niveles de riesgo |
-| `GET /api/estudiantes` | Lista de estudiantes con su último nivel de riesgo |
-| `POST /api/predecir` | Calcula el riesgo de un caso con el modelo |
-| `GET /api/reporte-metricas` | Métricas del último entrenamiento, si existen |
-| `GET /api/exportar-csv` | Exporta los datos de ejemplo en CSV |
+| `GET /api/estado` | Qué datos hay, periodo actual y origen del nivel de riesgo |
+| `GET /api/estudiantes` | Estudiantes (por código) con promedios y nivel de riesgo |
+| `GET /api/estudiantes/{codigo}` | Ficha: notas por curso y periodo |
+| `GET /api/cargas` | Bitácora de cargas |
+| `GET /api/calidad` | Última validación de los datos |
+| `POST /api/calidad/ejecutar` | Ejecuta la validación |
+| `GET /api/exportar-csv` | Exporta las notas por código |
+| `POST /api/predecir` | Simulador con el modelo de demostración |
+| `GET /api/reporte-metricas` | Métricas del modelo, cuando existan |
 
 ## Cuidado con los datos
 
