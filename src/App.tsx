@@ -55,6 +55,14 @@ interface Estudiante {
   };
 }
 
+// Dirección de la API del sistema. En desarrollo se puede cambiar con la variable VITE_API_URL
+// (por ejemplo, http://localhost:8000).
+const API_URL: string = ((import.meta as any).env?.VITE_API_URL ?? "https://proyecto-siat.onrender.com").replace(/\/$/, "");
+
+// Tres niveles de riesgo, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo).
+// Cortes de la probabilidad que entrega el modelo: menos de 0.50, bajo; de 0.50 a 0.75, medio; 0.75 o más, alto.
+const nivelDesde = (prob: number) => (prob >= 0.75 ? "Riesgo alto" : prob >= 0.5 ? "Riesgo medio" : "Riesgo bajo");
+
 export default function App() {
   const [seccionActiva, setSeccionActiva] = useState<"inicio" | "estudiantes" | "riesgos">("inicio");
   const [activeAlertsCount, setActiveAlertsCount] = useState(3);
@@ -124,7 +132,7 @@ export default function App() {
       inasistencias: 0,
       estado_pension: "al_dia",
       nota_final: 16.1,
-      ultima_prediccion: { probabilidad: 0.05, nivel: "Sin riesgo", fecha: "2026-07-02T08:00:00" }
+      ultima_prediccion: { probabilidad: 0.05, nivel: "Riesgo bajo", fecha: "2026-07-02T08:00:00" }
     }
   ]);
 
@@ -135,14 +143,25 @@ export default function App() {
     { id: 3, estudiante: "Ana Sofía Vargas", grado: "1° Sec. A", criticidad: "medio", mensaje: "Riesgo medio detectado: Ana Sofía Vargas - Alerta por 6 inasistencias acumuladas", fecha: "Ayer, 04:45 pm", atendida: false }
   ]);
 
+  // De dónde vienen los datos que se muestran: la API en línea o la copia local de ejemplo.
+  const [origenDatos, setOrigenDatos] = useState<"cargando" | "api" | "local">("cargando");
+
   useEffect(() => {
     const fetchEstudiantes = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/estudiantes");
+        const response = await fetch(`${API_URL}/api/estudiantes`);
         if (response.ok) {
-          const data = await response.json();
-          if (data && data.length > 0) {
+          const recibidos = await response.json();
+          if (recibidos && recibidos.length > 0) {
+            // El nivel se calcula siempre desde la probabilidad, para usar los tres niveles vigentes.
+            const data = recibidos.map((e: any) => ({
+              ...e,
+              // La API entrega la nota final dentro de "notas"; la interfaz la usa en el primer nivel.
+              nota_final: Number(e.nota_final ?? e.notas?.nota_final ?? 0),
+              ultima_prediccion: { ...e.ultima_prediccion, nivel: nivelDesde(Number(e.ultima_prediccion?.probabilidad ?? 0)) },
+            }));
             setEstudiantes(data);
+            setOrigenDatos("api");
             
             // Generar alertas dinámicas basadas en los alumnos con riesgo medio/alto de la base de datos
             const alumnosRiesgo = data.filter((e: any) => e.ultima_prediccion?.nivel === "Riesgo alto" || e.ultima_prediccion?.nivel === "Riesgo medio");
@@ -153,7 +172,7 @@ export default function App() {
                 grado: `${e.grado} ${e.seccion}`,
                 criticidad: e.ultima_prediccion?.nivel === "Riesgo alto" ? "alto" : "medio",
                 mensaje: `${e.ultima_prediccion?.nivel} detectado: ${e.nombres} ${e.apellidos} - Nota final registrada de ${e.notas?.nota_final || e.nota_final}`,
-                fecha: "Sincronizado de la BD",
+                fecha: "Recibido de la API",
                 atendida: false
               }));
               setAlertas(nuevasAlertas);
@@ -162,10 +181,15 @@ export default function App() {
               setAlertas([]);
               setActiveAlertsCount(0);
             }
+          } else {
+            setOrigenDatos("local");
           }
+        } else {
+          setOrigenDatos("local");
         }
       } catch (err) {
-        console.warn("FastAPI backend no disponible en localhost:8000. Utilizando datos simulados locales.", err);
+        console.warn(`La API (${API_URL}) no respondió. Se muestran los datos de ejemplo locales.`, err);
+        setOrigenDatos("local");
       }
     };
     fetchEstudiantes();
@@ -185,7 +209,9 @@ export default function App() {
     color: string;
     sugerencia: string;
     factores: string[];
+    origen?: string;
   } | null>(null);
+  const [simulando, setSimulando] = useState(false);
 
   // Variables de Registro de estudiantes
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -258,7 +284,7 @@ export default function App() {
 
     const prob = Math.min(Math.max(score, 0.01), 0.99);
 
-    let nivel = "Sin riesgo";
+    let nivel = "Riesgo bajo";
     let color = "emerald";
     let sugerencia = "Estudiante con rendimiento y conducta estable. Continuar con monitoreo.";
 
@@ -270,18 +296,14 @@ export default function App() {
       nivel = "Riesgo medio";
       color = "amber";
       sugerencia = "Intervención de tutoría sugerida para nivelar al estudiante en las materias críticas.";
-    } else if (prob >= 0.25) {
-      nivel = "Riesgo bajo";
-      color = "blue";
-      sugerencia = "Se sugiere acompañamiento preventivo de notas.";
     }
 
     return { probabilidad: prob, nivel, color, sugerencia, factores };
   };
 
-  const handleSimularForm = (e: React.FormEvent) => {
+  const handleSimularForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    const resultado = predecirRiesgoSimulado(
+    const local = predecirRiesgoSimulado(
       parseFloat(notaLibro.toString()),
       parseFloat(notaCuaderno.toString()),
       parseFloat(notaExamen.toString()),
@@ -289,7 +311,39 @@ export default function App() {
       parseInt(inasistencias.toString()),
       estadoPension
     );
-    setResultadoSimulado(resultado);
+    setSimulando(true);
+    try {
+      const respuesta = await fetch(`${API_URL}/api/predecir`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nivel_educativo: nivelEducativo,
+          nota_libro: parseFloat(notaLibro.toString()),
+          nota_cuaderno: parseFloat(notaCuaderno.toString()),
+          nota_examen: parseFloat(notaExamen.toString()),
+          conducta: parseFloat(conducta.toString()),
+          inasistencias: parseInt(inasistencias.toString()),
+          estado_pension: estadoPension,
+        }),
+      });
+      if (!respuesta.ok) throw new Error(`La API respondió ${respuesta.status}`);
+      const pred = await respuesta.json();
+      const prob = Number(pred.probabilidad_riesgo);
+      const nivel = nivelDesde(prob);
+      setResultadoSimulado({
+        probabilidad: prob,
+        nivel,
+        color: nivel === "Riesgo alto" ? "red" : nivel === "Riesgo medio" ? "amber" : "emerald",
+        sugerencia: pred.mensaje_alerta,
+        factores: (pred.factores_criticos ?? []).filter((f: string) => f !== "Ninguno detectado"),
+        origen: `Calculado por la API con: ${pred.modelo_usado}`,
+      });
+    } catch (err) {
+      console.warn("El simulador no pudo consultar la API.", err);
+      setResultadoSimulado({ ...local, origen: "La API no respondió: resultado calculado con reglas locales, no con el modelo." });
+    } finally {
+      setSimulando(false);
+    }
   };
 
   const handleCrearEstudiante = (e: React.FormEvent) => {
@@ -372,8 +426,7 @@ export default function App() {
 
   // Datos para Recharts
   const datosDistribucionRiesgo = [
-    { name: "Sin riesgo", value: estudiantes.filter(e => e.ultima_prediccion.nivel === "Sin riesgo").length, color: "#10b981" },
-    { name: "Riesgo bajo", value: estudiantes.filter(e => e.ultima_prediccion.nivel === "Riesgo bajo").length, color: "#3b82f6" },
+    { name: "Riesgo bajo", value: estudiantes.filter(e => e.ultima_prediccion.nivel === "Riesgo bajo").length, color: "#10b981" },
     { name: "Riesgo medio", value: estudiantes.filter(e => e.ultima_prediccion.nivel === "Riesgo medio").length, color: "#f59e0b" },
     { name: "Riesgo alto", value: estudiantes.filter(e => e.ultima_prediccion.nivel === "Riesgo alto").length, color: "#ef4444" }
   ];
@@ -541,6 +594,19 @@ export default function App() {
           </div>
         </header>
 
+        {/* Rótulo de demostración: deja claro qué es real y qué es de ejemplo */}
+        <div className="bg-amber-50 border-b border-amber-200 px-8 py-2 text-[11px] text-amber-900 flex flex-wrap items-center gap-x-3 gap-y-1 shrink-0">
+          <span className="font-black uppercase tracking-wider">Demostración</span>
+          <span>
+            Los estudiantes y sus notas son datos de ejemplo. El modelo es de prueba: el definitivo se entrenará con datos reales del colegio en el Sprint 3.
+          </span>
+          <span className="font-semibold">
+            {origenDatos === "cargando" && "Conectando con la API…"}
+            {origenDatos === "api" && "Fuente: API en línea"}
+            {origenDatos === "local" && "Fuente: datos locales (la API no respondió)"}
+          </span>
+        </div>
+
         {/* Cuerpo Principal Scrolleable */}
         <div className="flex-1 overflow-y-auto p-8">
           
@@ -636,7 +702,7 @@ export default function App() {
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estudiantes registrados</p>
                         <span className="text-3xl font-black text-slate-800 mt-1 block">{estudiantes.length}</span>
-                        <p className="text-[10px] text-emerald-600 font-bold mt-1">Sincronizados de la BD ↑</p>
+                        <p className="text-[10px] text-emerald-600 font-bold mt-1">{origenDatos === "api" ? "Recibidos de la API (ejemplo)" : "Datos locales de ejemplo"}</p>
                       </div>
                       <div className="w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/10">
                         <Users className="w-6 h-6" />
@@ -729,7 +795,7 @@ export default function App() {
                     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2 flex flex-col justify-between">
                       <div>
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Tendencia de Riesgo en el Tiempo</h3>
-                        <p className="text-[11px] text-slate-400">Evolución mensual de las alertas de riesgo predictivo en la institución.</p>
+                        <p className="text-[11px] text-slate-400">Serie ilustrativa: todavía no hay historial real de alertas de la institución.</p>
                       </div>
                       <div className="h-64 w-full mt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -739,7 +805,7 @@ export default function App() {
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
                             <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #f1f5f9" }} />
                             <Legend iconType="circle" wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
-                            <Line type="monotone" dataKey="Riesgo bajo" stroke="#3b82f6" strokeWidth={3} activeDot={{ r: 6 }} />
+                            <Line type="monotone" dataKey="Riesgo bajo" stroke="#10b981" strokeWidth={3} activeDot={{ r: 6 }} />
                             <Line type="monotone" dataKey="Riesgo medio" stroke="#f59e0b" strokeWidth={3} activeDot={{ r: 6 }} />
                             <Line type="monotone" dataKey="Riesgo alto" stroke="#ef4444" strokeWidth={3} activeDot={{ r: 6 }} />
                           </LineChart>
@@ -844,11 +910,11 @@ export default function App() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-sm">
-                          {estudiantes.filter(e => e.ultima_prediccion.nivel !== "Sin riesgo").map((est) => {
+                          {estudiantes.filter(e => e.ultima_prediccion.nivel !== "Riesgo bajo").map((est) => {
                             const badgeColor = {
                               "Riesgo alto": "bg-red-50 text-red-600 border-red-100",
                               "Riesgo medio": "bg-amber-50 text-amber-600 border-amber-100",
-                              "Riesgo bajo": "bg-blue-50 text-blue-600 border-blue-100"
+                              "Riesgo bajo": "bg-emerald-50 text-emerald-600 border-emerald-100"
                             }[est.ultima_prediccion.nivel];
 
                             return (
@@ -927,7 +993,6 @@ export default function App() {
                           className="bg-transparent focus:outline-none text-xs font-bold"
                         >
                           <option value="">Todos los Riesgos</option>
-                          <option value="Sin riesgo">Sin riesgo</option>
                           <option value="Riesgo bajo">Riesgo bajo</option>
                           <option value="Riesgo medio">Riesgo medio</option>
                           <option value="Riesgo alto">Riesgo alto</option>
@@ -964,8 +1029,7 @@ export default function App() {
                             const badgeColor = {
                               "Riesgo alto": "bg-red-50 text-red-600 border-red-100",
                               "Riesgo medio": "bg-amber-50 text-amber-600 border-amber-100",
-                              "Riesgo bajo": "bg-blue-50 text-blue-600 border-blue-100",
-                              "Sin riesgo": "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              "Riesgo bajo": "bg-emerald-50 text-emerald-600 border-emerald-100"
                             }[est.ultima_prediccion.nivel];
 
                             return (
@@ -1076,7 +1140,7 @@ export default function App() {
                   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
                     <div>
                       <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-1">Simulador de Riesgo Académico</h3>
-                      <p className="text-xs text-slate-400 mb-6">Realice simulaciones hipotéticas del modelo Random Forest (No altera base de datos).</p>
+                      <p className="text-xs text-slate-400 mb-6">Ingrese valores hipotéticos y el modelo de demostración de la API calcula el riesgo. No altera la base de datos.</p>
                     </div>
 
                     <form onSubmit={handleSimularForm} className="space-y-4">
@@ -1173,10 +1237,11 @@ export default function App() {
 
                       <button
                         type="submit"
+                        disabled={simulando}
                         className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all active:scale-[0.98] mt-2"
                       >
                         <Sparkles className="w-4 h-4 text-amber-400" />
-                        <span>Ejecutar Simulación</span>
+                        <span>{simulando ? "Consultando el modelo…" : "Ejecutar Simulación"}</span>
                       </button>
                     </form>
 
@@ -1199,6 +1264,9 @@ export default function App() {
                             }`}>
                               {resultadoSimulado.nivel}
                             </span>
+                            {resultadoSimulado.origen && (
+                              <span className="text-[10px] text-slate-500 block mt-1">{resultadoSimulado.origen}</span>
+                            )}
                           </div>
                           <div className="text-right">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block">Probabilidad</span>

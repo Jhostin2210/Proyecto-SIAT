@@ -1,6 +1,7 @@
 import os
 import csv
 import io
+import json
 import math
 from typing import List, Optional
 from datetime import datetime
@@ -51,11 +52,12 @@ class PredictionOutput(BaseModel):
     factores_criticos: List[str]
     modelo_usado: str
 
-# Función auxiliar para simular predicciones si el archivo .pkl no existe
+# Niveles de riesgo. El alcance del proyecto define tres: bajo (verde), medio (amarillo) y alto (rojo).
+# Los cortes son provisionales: se fijarán con datos de validación cuando el modelo se entrene con datos reales.
+NIVELES_RIESGO = ["Riesgo bajo", "Riesgo medio", "Riesgo alto"]
+
 def clasificar_riesgo(prob: float) -> str:
-    if prob < 0.25:
-        return "Sin riesgo"
-    elif prob < 0.50:
+    if prob < 0.50:
         return "Riesgo bajo"
     elif prob < 0.75:
         return "Riesgo medio"
@@ -114,8 +116,7 @@ def predecir_riesgo_simulado(input_data: StudentPredictInput) -> PredictionOutpu
     nivel = clasificar_riesgo(prob)
     
     mensajes = {
-        "Sin riesgo": "Estudiante con desempeño estable. Continuar con el monitoreo regular.",
-        "Riesgo bajo": "Atención preventiva recomendada. El estudiante muestra pequeñas desviaciones en notas o asistencia.",
+        "Riesgo bajo": "Desempeño estable. Continuar con el seguimiento regular.",
         "Riesgo medio": "Intervención oportuna sugerida. Presenta problemas notorios que requieren citación al padre de familia.",
         "Riesgo alto": "¡ALERTA CRÍTICA! Se requiere plan de tutoría inmediato y consejería psicopedagógica urgente."
     }
@@ -136,6 +137,33 @@ def read_root():
         "estado": "Servidor funcionando correctamente",
         "fecha_servidor": datetime.now().isoformat(),
         "modelo_cargado": os.path.exists(MODEL_PATH)
+    }
+
+def contar_estudiantes_bd() -> int:
+    """Número de estudiantes en la base de datos; 0 si está vacía o no responde."""
+    try:
+        db = SessionLocal()
+        try:
+            return int(db.execute(text("SELECT COUNT(*) FROM estudiantes")).scalar() or 0)
+        finally:
+            db.close()
+    except Exception:
+        return 0
+
+@app.get("/api/estado", summary="Indica qué es real y qué es de ejemplo en esta instalación")
+def obtener_estado():
+    """
+    Informa de dónde salen los datos que entrega la API, para que la interfaz no presente
+    datos de ejemplo como si fueran reales.
+    """
+    en_bd = contar_estudiantes_bd()
+    return {
+        "origen_datos": "base_de_datos" if en_bd > 0 else "ejemplo",
+        "estudiantes_en_bd": en_bd,
+        "modelo_cargado": os.path.exists(MODEL_PATH),
+        "modelo": "Random Forest de demostración, entrenado con un conjunto de datos sintético",
+        "metricas_disponibles": os.path.exists(REPORT_PATH),
+        "niveles_riesgo": NIVELES_RIESGO,
     }
 
 @app.post("/api/predecir", response_model=PredictionOutput, summary="Realiza la predicción de riesgo para un estudiante")
@@ -192,10 +220,9 @@ def predecir_riesgo(input_data: StudentPredictInput):
             factores.append("Pensión atrasada")
             
         mensajes = {
-            "Sin riesgo": "Estudiante estable académicamente.",
-            "Riesgo bajo": "Atención sugerida para corregir leves bajas académicas o de asistencia.",
+            "Riesgo bajo": "Desempeño estable. Continuar con el seguimiento regular.",
             "Riesgo medio": "Se recomienda citación a reunión presencial de tutoría.",
-            "Riesgo alto": "Alerta máxima. Riesgo crítico de deserción o repitencia."
+            "Riesgo alto": "Alerta: riesgo alto de bajo rendimiento. Requiere atención del tutor esta semana."
         }
         
         return PredictionOutput(
@@ -212,7 +239,8 @@ def predecir_riesgo(input_data: StudentPredictInput):
             detail=f"Error al ejecutar la predicción con el modelo PKL: {str(e)}. Iniciando simulación de fallback..."
         )
 
-# Datos semilla de estudiantes simulados para endpoints de listado
+# Estudiantes de ejemplo (ficticios). Se devuelven solo cuando la base de datos está vacía o no responde;
+# el endpoint /api/estado informa cuál es el origen de los datos.
 MOCK_STUDENTS = [
     {
         "id": 1,
@@ -277,7 +305,7 @@ MOCK_STUDENTS = [
         "notas": {"nota_libro": 16.0, "nota_cuaderno": 15.5, "nota_examen": 17.0, "conducta": 18.0, "nota_final": 16.1},
         "inasistencias": 0,
         "estado_pension": "al_dia",
-        "ultima_prediccion": {"probabilidad": 0.05, "nivel": "Sin riesgo", "fecha": "2026-07-02T08:00:00"}
+        "ultima_prediccion": {"probabilidad": 0.05, "nivel": "Riesgo bajo", "fecha": "2026-07-02T08:00:00"}
     }
 ]
 
@@ -379,6 +407,7 @@ def listar_estudiantes(grado: Optional[str] = None, nivel_riesgo: Optional[str] 
                 fecha_pred = datetime.now()
                 
             prob = float(prob)
+            nivel = clasificar_riesgo(prob)
             if isinstance(fecha_pred, datetime):
                 fecha_pred = fecha_pred.isoformat()
             elif not fecha_pred:
@@ -473,37 +502,21 @@ def exportar_csv():
 @app.get("/api/reporte-metricas", summary="Retorna el reporte de métricas de desempeño del modelo")
 def obtener_reporte_metricas():
     """
-    Retorna el reporte de entrenamiento de Random Forest (F1-score, accuracy, importancia de variables)
-    generado tras el entrenamiento en Google Colab.
+    Retorna el reporte de métricas del último entrenamiento, si existe (data/metrics_report.json).
+    No devuelve valores por defecto: si no hay reporte, lo indica.
     """
-    # Si existe el archivo real de métricas, lo leemos
+    # Solo se informan métricas que provienen de un entrenamiento real.
     if os.path.exists(REPORT_PATH):
         try:
-            return joblib.load(REPORT_PATH)
-        except:
-            pass
-            
-    # De lo contrario, retornamos un JSON estructurado por defecto (espejo del metrics_report.json del notebook)
+            with open(REPORT_PATH, "r", encoding="utf-8") as archivo:
+                reporte = json.load(archivo)
+            reporte["disponible"] = True
+            return reporte
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"No se pudo leer el reporte de métricas: {str(e)}")
+
     return {
-        "fecha_entrenamiento": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "n_registros": 250,
-        "features": ["nivel_educativo", "nota_libro", "nota_cuaderno", "nota_examen", "conducta", "inasistencias", "estado_pension"],
-        "cv_folds": 5,
-        "metricas_cv": {
-            "accuracy": {"mean": 0.892, "std": 0.024},
-            "precision": {"mean": 0.841, "std": 0.031},
-            "recall": {"mean": 0.815, "std": 0.042},
-            "f1": {"mean": 0.827, "std": 0.035},
-            "roc_auc": {"mean": 0.934, "std": 0.015}
-        },
-        "importancia_variables": {
-            "nota_examen": 0.312,
-            "conducta": 0.224,
-            "inasistencias": 0.185,
-            "nota_cuaderno": 0.128,
-            "nota_libro": 0.081,
-            "estado_pension": 0.052,
-            "nivel_educativo": 0.018
-        },
-        "sklearn_version": "1.5.2"
+        "disponible": False,
+        "mensaje": "Todavía no hay un reporte de métricas. El modelo actual es de demostración y se entrenó con datos sintéticos; "
+                   "las métricas se publicarán cuando se entrene y valide con datos reales del colegio.",
     }
