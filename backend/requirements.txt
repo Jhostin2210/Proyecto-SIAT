@@ -6,4 +6,5 @@ psycopg2-binary
 pandas
 scikit-learn
 joblib
-python-dotenvopenpyxl
+python-dotenv
+openpyxl

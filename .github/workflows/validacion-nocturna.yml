@@ -45,10 +45,11 @@ jobs:
         run: python -m etl.validar_datos --reporte reporte-calidad.md
       - name: Publicar el reporte en el resumen
         if: always()
-        run: cat reporte-calidad.md >> "$GITHUB_STEP_SUMMARY"
+        run: if [ -f reporte-calidad.md ]; then cat reporte-calidad.md >> "$GITHUB_STEP_SUMMARY"; fi
       - name: Guardar el reporte
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reporte-calidad
           path: backend/reporte-calidad.md
+          if-no-files-found: ignore
