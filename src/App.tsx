@@ -30,14 +30,8 @@ const MENU = [
 ];
 
 function Rotulo({ estado }: { estado: Estado | null }) {
-  if (!estado) return null;
-  if (!estado.base_de_datos.conectada) return <div className="border-b border-red-200 bg-red-50 px-6 py-2 text-[13px] text-red-800">No hay conexión con la base de datos.</div>;
-  if (estado.tipo_datos !== "practica") return null;
-  return (
-    <div className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-[13px] text-amber-900">
-      <span className="font-semibold">Demostración.</span> Los estudiantes y sus datos son ficticios; la estructura es la de la base del colegio.
-    </div>
-  );
+  if (!estado || estado.base_de_datos.conectada) return null;
+  return <div className="border-b border-red-200 bg-red-50 px-6 py-2 text-[13px] text-red-800">No hay conexión con la base de datos.</div>;
 }
 
 export default function App() {
@@ -110,6 +104,7 @@ export default function App() {
       <div className="min-w-0 flex-1">
         <Rotulo estado={estado} />
         <main className="mx-auto max-w-6xl px-4 py-7 sm:px-8">{vista()}</main>
+        {estado?.tipo_datos === "practica" && <footer className="mx-auto max-w-6xl px-4 pb-6 text-[11px] text-slate-400 sm:px-8">SIA-T · Datos de práctica</footer>}
       </div>
     </div>
   );
