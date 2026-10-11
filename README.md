@@ -35,6 +35,10 @@ Predice si un estudiante desaprobará (menos de 11) el examen del periodo siguie
 
 Supera a las referencias por un margen moderado. Detecta a tres de cada cuatro estudiantes que desaprobarán, pero de cada cinco alertas una acierta: sirve para ordenar a quién mirar primero, no para afirmar quién va a desaprobar. Los datos son pocos (64 casos desaprobados) y la validación debe repetirse con más.
 
+### Modelo de referencia con una base pública
+
+El mismo método, con la base pública *Student Performance* (UCI; 1 044 registros de secundaria de Portugal, con notas de periodo, inasistencias e historial), llega a 92 % de exactitud y un AUC de 0,97. Ese modelo, probado con los resultados reales del colegio, baja a un AUC de 0,71 y detecta a 30 % de los que desaprueban: no supera al modelo local, así que no se usa para calcular el riesgo. Queda como referencia de lo que se lograría con datos completos. Detalle en [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md).
+
 ## Niveles de riesgo
 
 Tres niveles, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo). Los cortes se fijaron con predicciones sobre datos que el modelo no vio:
@@ -58,6 +62,7 @@ El riesgo de un estudiante es el promedio de sus cursos; con un curso en riesgo 
 | `backend/etl/validar_datos.py` | Reglas de calidad de los datos. |
 | `backend/etl/variables.py` | Variables del modelo, a partir de las notas. |
 | `backend/ml/entrenar_modelo.py` | Entrenamiento y validación del modelo. |
+| `backend/ml/modelo_referencia.py`, `backend/data/publica/` | Modelo de referencia con una base pública y su prueba en el colegio. |
 | `backend/etl/riesgo.py` | Nivel de riesgo de cada estudiante, con el modelo. |
 | `backend/models/modelo_riesgo.joblib`, `backend/data/metrics_report.json` | Modelo entrenado y reporte de su validación. |
 | `backend/etl/generar_datos_practica.py`, `backend/data/notas_practica.csv` | Datos de práctica de la demostración. |
@@ -120,6 +125,7 @@ Sin `SQLITE_PATH` se usa `sia_t_local.db`. Para PostgreSQL, las variables descri
 | `GET /api/exportar-csv` | Exporta las notas por código |
 | `POST /api/predecir` | Simulador: estima el riesgo de un caso con el modelo |
 | `GET /api/reporte-metricas` | Reporte de la validación del modelo |
+| `GET /api/reporte-referencia` | Modelo de referencia con la base pública |
 
 ## Cuidado con los datos
 

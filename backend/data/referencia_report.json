@@ -1,0 +1,177 @@
+{
+ "fecha": "2026-10-10 20:40",
+ "base_publica": {
+  "nombre": "Student Performance",
+  "autores": "P. Cortez y A. Silva (2008)",
+  "origen": "Repositorio UCI de Machine Learning, https://archive.ics.uci.edu/dataset/320/student+performance",
+  "licencia": "CC BY 4.0",
+  "descripcion": "Estudiantes de secundaria de dos colegios de Portugal, en Matemática y Lenguaje. Notas de 0 a 20 en tres periodos, inasistencias, historial y contexto.",
+  "registros": 1044,
+  "estudiantes": 662,
+  "desaprobados": 230,
+  "proporcion_desaprobados": 0.22
+ },
+ "que_predice": "Si el estudiante desaprueba el curso al final del año (nota final menor de 10, la aprobatoria en Portugal).",
+ "validacion": "Validación cruzada estratificada y agrupada por estudiante, 5 partes, repetida 10 veces. Corte de 0,5.",
+ "exactitud_sin_modelo": 0.78,
+ "con_todas_las_columnas": {
+  "con_dos_periodos": {
+   "nombre": "Con las notas de los dos periodos anteriores",
+   "precision_media": {
+    "media": 0.906,
+    "desviacion": 0.004
+   },
+   "auc_roc": {
+    "media": 0.971,
+    "desviacion": 0.001
+   },
+   "exactitud": {
+    "media": 0.923,
+    "desviacion": 0.002
+   },
+   "sensibilidad": {
+    "media": 0.879,
+    "desviacion": 0.006
+   },
+   "precision": {
+    "media": 0.794,
+    "desviacion": 0.003
+   },
+   "alertas": {
+    "media": 0.244,
+    "desviacion": 0.002
+   }
+  },
+  "con_un_periodo": {
+   "nombre": "Con la nota de un solo periodo anterior",
+   "precision_media": {
+    "media": 0.769,
+    "desviacion": 0.006
+   },
+   "auc_roc": {
+    "media": 0.931,
+    "desviacion": 0.002
+   },
+   "exactitud": {
+    "media": 0.869,
+    "desviacion": 0.004
+   },
+   "sensibilidad": {
+    "media": 0.786,
+    "desviacion": 0.012
+   },
+   "precision": {
+    "media": 0.673,
+    "desviacion": 0.009
+   },
+   "alertas": {
+    "media": 0.257,
+    "desviacion": 0.003
+   }
+  },
+  "sin_notas": {
+   "nombre": "Sin notas: solo inasistencias, historial y contexto",
+   "precision_media": {
+    "media": 0.508,
+    "desviacion": 0.012
+   },
+   "auc_roc": {
+    "media": 0.792,
+    "desviacion": 0.004
+   },
+   "exactitud": {
+    "media": 0.798,
+    "desviacion": 0.004
+   },
+   "sensibilidad": {
+    "media": 0.403,
+    "desviacion": 0.012
+   },
+   "precision": {
+    "media": 0.559,
+    "desviacion": 0.013
+   },
+   "alertas": {
+    "media": 0.159,
+    "desviacion": 0.005
+   }
+  }
+ },
+ "variables_mas_influyentes": [
+  {
+   "variable": "G2",
+   "peso": 0.401
+  },
+  {
+   "variable": "G1",
+   "peso": 0.258
+  },
+  {
+   "variable": "failures",
+   "peso": 0.052
+  },
+  {
+   "variable": "curso_Matemática",
+   "peso": 0.03
+  },
+  {
+   "variable": "absences",
+   "peso": 0.021
+  },
+  {
+   "variable": "goout",
+   "peso": 0.016
+  },
+  {
+   "variable": "higher_yes",
+   "peso": 0.014
+  },
+  {
+   "variable": "age",
+   "peso": 0.014
+  }
+ ],
+ "solo_columnas_compartidas": {
+  "precision_media": {
+   "media": 0.87,
+   "desviacion": 0.001
+  },
+  "auc_roc": {
+   "media": 0.953,
+   "desviacion": 0.0
+  },
+  "exactitud": {
+   "media": 0.859,
+   "desviacion": 0.002
+  },
+  "sensibilidad": {
+   "media": 0.924,
+   "desviacion": 0.002
+  },
+  "precision": {
+   "media": 0.654,
+   "desviacion": 0.003
+  },
+  "alertas": {
+   "media": 0.353,
+   "desviacion": 0.002
+  }
+ },
+ "probado_en_el_colegio": {
+  "casos": 519,
+  "desaprobados": 64,
+  "proporcion_desaprobados": 0.123,
+  "precision_media": 0.319,
+  "auc_roc": 0.706,
+  "exactitud": 0.871,
+  "sensibilidad": 0.297,
+  "precision": 0.463,
+  "alertas": 0.079
+ },
+ "conclusiones": [
+  "Con datos completos (notas de periodos anteriores, inasistencias e historial) el método predice bien quién desaprueba el curso.",
+  "Lo que más pesa son las notas de los periodos anteriores; sin ellas el resultado cae mucho.",
+  "Un modelo entrenado con la base pública no sirve tal cual en el colegio: allí no supera al modelo entrenado con los datos propios. Por eso el nivel de riesgo se calcula con el modelo local.",
+  "No son el mismo problema: la base pública predice la nota final del curso a partir de las notas de periodo; el colegio predice el examen del mes siguiente, que varía más."
+ ]
+}

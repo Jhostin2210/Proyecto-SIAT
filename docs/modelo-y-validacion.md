@@ -115,3 +115,27 @@ python -m ml.entrenar_modelo
 ```
 
 Tarda unos diez minutos. Escribe `models/modelo_riesgo.joblib` y `data/metrics_report.json`. El archivo del modelo contiene los árboles y los cortes, no las notas de ningún estudiante.
+
+## 9. Modelo de referencia con una base pública
+
+Para saber hasta dónde llega el método con datos completos, se repitió con una base pública ya estudiada: *Student Performance* (Cortez y Silva, 2008; repositorio UCI, licencia CC BY 4.0). Son 1 044 registros de 662 estudiantes de secundaria de dos colegios de Portugal, en Matemática y Lenguaje, con notas de 0 a 20 en tres periodos, inasistencias, cursos desaprobados antes y datos de contexto. Se predice si el estudiante desaprueba el curso (nota final menor de 10); desaprueba 22 %. Los archivos están en `backend/data/publica/` y el reporte en `backend/data/referencia_report.json` (`python -m ml.modelo_referencia`).
+
+Misma validación: cruzada, agrupada por estudiante, 5 partes, 10 repeticiones. Corte de 0,5.
+
+| Con qué datos | Exactitud | AUC | Detecta | Aciertos de sus alertas |
+|---|---|---|---|---|
+| Base pública, con las notas de los dos periodos anteriores | 92 % | 0,97 | 88 % | 79 % |
+| Base pública, con la nota de un solo periodo anterior | 87 % | 0,93 | 79 % | 67 % |
+| Base pública, sin notas: solo inasistencias, historial y contexto | 80 % | 0,79 | 40 % | 56 % |
+| **Entrenado con la base pública y probado con los resultados reales del colegio** | 87 % | 0,71 | 30 % | 46 % |
+
+Sin modelo, decir que nadie desaprueba acierta 78 % en la base pública y 88 % en el colegio.
+
+**Qué se concluye**
+
+- Con datos completos, el método funciona bien: 92 % de exactitud y detecta a 88 % de los que desaprueban.
+- Lo que más pesa son las notas de los periodos anteriores (G2 y G1 suman dos tercios del peso); después, los cursos desaprobados antes y las inasistencias.
+- **Un modelo entrenado con la base pública no sirve tal cual en el colegio.** Para aplicarlo solo puede usar las columnas que el colegio también tiene (nota actual y anterior). Probado con los 519 casos reales, obtiene un AUC de 0,71 y detecta a 30 % de los que desaprueban: igual que la regla simple y por debajo del modelo entrenado con los datos del colegio (AUC 0,75). Su 87 % de exactitud es menor que el 88 % de no alertar a nadie.
+- La razón es que no son el mismo problema: la base pública predice la nota final del curso a partir de notas de periodo, que se parecen mucho entre sí; el colegio predice el examen del mes siguiente, que varía más.
+
+Por eso el nivel de riesgo del sistema lo sigue calculando el modelo entrenado con los datos del colegio. La base pública queda como referencia del método y como argumento para pedir al colegio lo que falta: notas de cierre de periodo de todos los cursos, inasistencias e historial.

@@ -264,6 +264,16 @@ def obtener_reporte_metricas():
     return {"disponible": False, "mensaje": "Todavía no hay un modelo entrenado. El nivel de riesgo sale de una regla simple."}
 
 
+@app.get("/api/reporte-referencia", summary="Modelo de referencia con una base pública")
+def obtener_reporte_referencia():
+    """Resultados del método con una base pública ya estudiada y de probar ese modelo en el colegio. No es el modelo en uso."""
+    ruta = os.path.join(BASE_DIR, "data", "referencia_report.json")
+    if not os.path.exists(ruta):
+        return {"disponible": False}
+    with open(ruta, "r", encoding="utf-8") as archivo:
+        return {"disponible": True, **json.load(archivo)}
+
+
 # ───────────────────────── Simulador ─────────────────────────
 class StudentPredictInput(BaseModel):
     nivel_educativo: str = Field(..., description="'primaria' o 'secundaria'")

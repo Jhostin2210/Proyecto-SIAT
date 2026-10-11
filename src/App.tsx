@@ -151,10 +151,12 @@ export default function App() {
   const [estadoApi, setEstadoApi] = useState<any>(null);
   const [calidad, setCalidad] = useState<any>(null);
   const [metricas, setMetricas] = useState<any>(null);
+  const [referencia, setReferencia] = useState<any>(null);
   useEffect(() => {
     fetch(`${API_URL}/api/estado`).then((r) => (r.ok ? r.json() : null)).then(setEstadoApi).catch(() => setEstadoApi(null));
     fetch(`${API_URL}/api/calidad`).then((r) => (r.ok ? r.json() : null)).then(setCalidad).catch(() => setCalidad(null));
     fetch(`${API_URL}/api/reporte-metricas`).then((r) => (r.ok ? r.json() : null)).then(setMetricas).catch(() => setMetricas(null));
+    fetch(`${API_URL}/api/reporte-referencia`).then((r) => (r.ok ? r.json() : null)).then(setReferencia).catch(() => setReferencia(null));
   }, []);
 
   // De dónde vienen los datos que se muestran: la API en línea o la copia local de ejemplo.
@@ -1190,6 +1192,57 @@ export default function App() {
                   </div>
                   <p className="text-[11px] text-slate-500 mt-4">
                     <span className="font-bold text-slate-700">Límites:</span> {metricas.limitaciones.join(" ")}
+                  </p>
+                </div>
+              )}
+
+              {/* Modelo de referencia: el mismo método con una base pública ya estudiada */}
+              {seccionActiva === "riesgos" && referencia?.disponible && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-6">
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Modelo de referencia: base pública ya estudiada</h3>
+                  <p className="text-[11px] text-slate-500 mb-4">
+                    {referencia.base_publica.nombre}, de {referencia.base_publica.autores}: {referencia.base_publica.registros} registros de {referencia.base_publica.estudiantes} estudiantes de secundaria de Portugal,
+                    con notas de 0 a 20. No son datos de este colegio. {referencia.que_predice} {referencia.validacion}
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="text-[10px] uppercase text-slate-400 border-b border-slate-100">
+                          <th className="py-2 pr-3">Con qué datos</th>
+                          <th className="py-2 px-3 text-center" title="Porcentaje de casos bien clasificados (accuracy)">Exactitud</th>
+                          <th className="py-2 px-3 text-center">AUC</th>
+                          <th className="py-2 px-3 text-center" title="De los que desaprueban, cuántos detecta">Detecta</th>
+                          <th className="py-2 pl-3 text-center" title="De sus alertas, cuántas aciertan">Aciertos de sus alertas</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(referencia.con_todas_las_columnas).map(([clave, m]: [string, any]) => (
+                          <tr key={clave} className="border-b border-slate-50 text-slate-600">
+                            <td className="py-2 pr-3">Base pública · {m.nombre.charAt(0).toLowerCase() + m.nombre.slice(1)}</td>
+                            <td className="py-2 px-3 text-center">{Math.round(m.exactitud.media * 100)} %</td>
+                            <td className="py-2 px-3 text-center">{m.auc_roc.media.toFixed(2)}</td>
+                            <td className="py-2 px-3 text-center">{Math.round(m.sensibilidad.media * 100)} %</td>
+                            <td className="py-2 pl-3 text-center">{Math.round(m.precision.media * 100)} %</td>
+                          </tr>
+                        ))}
+                        {referencia.probado_en_el_colegio && (
+                          <tr className="bg-amber-50/60 font-bold text-slate-800">
+                            <td className="py-2 pr-3">Entrenado con la base pública y probado con los resultados reales de este colegio</td>
+                            <td className="py-2 px-3 text-center">{Math.round(referencia.probado_en_el_colegio.exactitud * 100)} %</td>
+                            <td className="py-2 px-3 text-center">{referencia.probado_en_el_colegio.auc_roc.toFixed(2)}</td>
+                            <td className="py-2 px-3 text-center">{Math.round(referencia.probado_en_el_colegio.sensibilidad * 100)} %</td>
+                            <td className="py-2 pl-3 text-center">{Math.round(referencia.probado_en_el_colegio.precision * 100)} %</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-4">
+                    <span className="font-bold text-slate-700">Sin modelo,</span> decir que nadie desaprueba acierta {Math.round(referencia.exactitud_sin_modelo * 100)} % en la base pública
+                    {referencia.probado_en_el_colegio ? ` y ${Math.round((1 - referencia.probado_en_el_colegio.proporcion_desaprobados) * 100)} % en el colegio` : ""}: la exactitud sola no basta para juzgar un modelo.
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    <span className="font-bold text-slate-700">Qué se concluye:</span> {referencia.conclusiones.join(" ")}
                   </p>
                 </div>
               )}
