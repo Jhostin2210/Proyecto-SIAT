@@ -1,70 +1,102 @@
 # Datos disponibles y variables del modelo
 
-Actividades A-0.1.1.2 (calidad y disponibilidad de los datos) y A-0.1.1.3 (variables) del cronograma, Sprint 1. Las cifras salen de ejecutar la carga sobre el registro real en un equipo del proyecto; este documento no contiene datos de ningún estudiante.
+Actividades A-0.1.1.2 (calidad y disponibilidad de los datos) y A-0.1.1.3 (variables) del cronograma. Las cifras salen de cargar la base consolidada de notas del colegio en un equipo del proyecto, el 10/10/2026. Este documento no contiene datos de ningún estudiante.
 
 ## 1. Qué datos hay
 
-| Fuente | Contenido | Situación |
-|---|---|---|
-| Registro de notas de noviembre y diciembre de 2025 (Excel) | Matemática, Historia y Economía, de 3.° de primaria a 2.° de secundaria | **Se carga de forma automática** |
-| Registro de notas de marzo a mayo de 2026 (Excel) | Personal Social e Historia por competencias | Otro formato; requiere un lector propio. Incluye una hoja con DNI y fechas de nacimiento que no debe cargarse |
-| 36 fotografías de cuadernos de registro | Exámenes de marzo, abril y primer trimestre de 2026 | No son legibles por el sistema; habría que transcribirlas |
-| Asistencia e incidencias | — | No existen en formato digital |
-| Exportaciones de Cubicol | — | Pendientes de solicitar al colegio |
+La fuente es un libro de Excel que consolida todo lo entregado por el colegio, con una fila por nota (3 937 filas) y, en cada fila, de qué archivo u hoja salió.
 
-## 2. Calidad del registro de 2025
+| Origen | Contenido | Filas | Situación |
+|---|---|---|---|
+| Registro de notas en Excel, 2025 | Noviembre y diciembre de 2025, de 3.° de primaria a 2.° de secundaria | 968 | Validadas |
+| Registro de notas en Excel, 2026 | Marzo a mayo de 2026 | 1 528 | Validadas |
+| 36 fotografías de cuadernos de registro | Exámenes mensuales de marzo y abril, y del primer trimestre de 2026 | 1 441 | **Por validar**: transcritas, falta cotejarlas con el original |
+| Asistencia e incidencias | — | — | No existen en formato digital |
+| Exportaciones de Cubicol | — | — | Pendientes de solicitar al colegio |
+
+El libro trae además una hoja con DNI y otros datos personales. **Esa hoja no se lee ni se carga.**
+
+Supuesto por confirmar con el colegio: el registro de marzo a mayo y las fotografías no indican el año; se cargaron como 2026.
+
+## 2. Qué quedó en la base
 
 | Medida | Valor |
 |---|---|
-| Hojas (grados) | 6 |
-| Bloques de curso y mes | 32 |
-| Filas de estudiantes leídas | 230 |
-| Estudiantes con notas válidas | 44 |
-| Notas válidas cargadas | 715 |
-| Periodos | 2 consecutivos (noviembre y diciembre de 2025) |
-| Estudiantes con los dos periodos | 44 de 44 |
+| Notas válidas cargadas | 3 878 de 3 937 filas |
+| Estudiantes | 173 |
+| Matrículas (estudiante y año) | 187: 48 en 2025 y 139 en 2026; 14 estudiantes están en los dos años |
+| Cursos | 16, en 4 áreas |
+| Periodos | 6: noviembre y diciembre de 2025; marzo, abril, mayo y primer trimestre de 2026 |
 | Reconciliación entre el archivo y la base | Correcta, sin duplicados |
 
-Observaciones que la carga detecta y reporta:
+| Periodo | Notas | Estudiantes | Cursos |
+|---|---|---|---|
+| Noviembre de 2025 | 463 | 48 | 7 |
+| Diciembre de 2025 | 490 | 48 | 7 |
+| Marzo de 2026 | 961 | 118 | 11 |
+| Abril de 2026 | 958 | 113 | 11 |
+| Mayo de 2026 | 517 | 57 | 7 |
+| Primer trimestre de 2026 | 489 | 68 | 4 |
+
+| Tipo de nota | Notas | Promedio | Menores de 11 |
+|---|---|---|---|
+| Cuaderno | 925 | 15,0 | 6 % |
+| Examen | 897 | 14,6 | 15 % |
+| Oral | 674 | 14,8 | 5 % |
+| Libro | 659 | 14,9 | 6 % |
+| Práctica | 287 | 16,3 | 0 % |
+| Promedio que anota el docente | 225 | 14,9 | 8 % |
+| Conducta | 130 | 15,1 | 5 % |
+| Exposición | 52 | 13,9 | 12 % |
+| Trabajo | 29 | 12,3 | 21 % |
+
+El examen es la nota que más separa a los estudiantes: los trabajos casi siempre se aprueban.
+
+## 3. Calidad
+
+Lo que la carga no acepta, y lo dice:
 
 | Observación | Casos | Qué hace la carga |
 |---|---|---|
-| Nota vacía | 13 | No la carga y la reporta |
-| Fila con todas las notas en cero | 9 | No la carga: se trata como estudiante sin evaluación |
-| Título del bloque con otro grado que la hoja | 4 | Usa el grado de la hoja |
-| Columna con notas pero sin encabezado | 3 | No la carga |
-| Nota en cero aislada | 3 | La carga y pide confirmarla |
-| Componente repetido en un bloque | 2 | Carga el primero |
-| Valor no numérico | 2 | Lo rechaza |
-| Nombre de curso mal escrito | 1 curso | Lo corrige con el catálogo de cursos |
+| Más de una nota del mismo tipo para el mismo estudiante, curso y periodo | 33 | Conserva la primera |
+| Nota sin mes ni tipo de evaluación reconocible | 15 | No la carga |
+| Casilla sin nota o con texto («no vino», «?») | 7 | No la carga; no asume cero |
+| Actividad fuera del catálogo de cursos | 4 | No la carga |
 
-**Conclusión.** El registro sirve para construir y probar la carga, y tiene dos periodos seguidos por estudiante, que es lo mínimo para predecir un periodo a partir del anterior. No alcanza para validar un modelo: son 44 estudiantes, pocos cursos por grado y un solo docente. Hacen falta las exportaciones de Cubicol de 2025 y 2026.
+Lo que la validación automática avisa sobre la base ya cargada (ninguna regla crítica falla):
 
-## 3. Variables propuestas
-
-Pendiente de validar con los docentes en el taller del Sprint 1.
-
-| Variable | De dónde sale | Situación |
+| Aviso | Casos | Qué significa |
 |---|---|---|
-| Promedio de exámenes del periodo | Notas | Disponible |
-| Promedio de libro y cuaderno | Notas | Disponible |
-| Nota de conducta | Notas | Disponible en parte: no todos los cursos la registran |
-| Cambio del promedio frente al periodo anterior | Notas de dos periodos | Disponible |
-| Número de cursos con examen desaprobado | Notas | Disponible |
-| Grado y nivel educativo | Registro | Disponible |
-| Inasistencias del periodo | Asistencia | No disponible: se lleva en papel |
-| Incidencias del periodo | Incidencias | No disponible: se llevan en papel |
+| Notas por validar | 1 426 | Transcritas de cuadernos; falta cotejarlas |
+| Estudiantes de los que solo se conoce el nombre de pila | 78 | En los cuadernos fotografiados figura solo el nombre; no se pueden enlazar con seguridad con otros años |
+| Cursos sin nota de examen en un periodo | 62 | El modelo usa entonces los trabajos |
+| Notas en cero | 56 | Conviene confirmar si son inasistencias a la evaluación |
+| Estudiantes con un solo periodo | 24 | No sirven para entrenar: el modelo necesita dos periodos seguidos |
 
-**Qué se predice:** si el estudiante desaprobará el periodo siguiente (promedio menor de 11).
+**Conclusión.** La base alcanza para entrenar y validar un primer modelo (519 casos de 146 estudiantes), con resultados que se informan con su margen de variación. No alcanza para darlo por definitivo: faltan las exportaciones completas de Cubicol, cotejar las notas transcritas, y la asistencia y las incidencias en formato digital.
 
-**Variable retirada:** el estado de pago de pensiones. Era un dato simulado, es sensible y el tutor no puede actuar sobre él.
+## 4. Identidad de los estudiantes
 
-## 4. Nivel de riesgo mientras no hay modelo
+- Cada estudiante tiene un **código único** (`E-0001`…), asignado en orden aleatorio. Es lo que usa el sistema para identificarlo.
+- La base guarda **nombres, un apellido, año, nivel y grado**. No guarda DNI, fecha de nacimiento, dirección ni datos de los apoderados.
+- La relación entre el nombre completo del registro y el código queda en `backend/data/privado/`, que no se sube al repositorio.
+- Este repositorio y la API de la demostración son públicos: **los datos reales solo se cargan en local**. La demostración usa datos de práctica.
 
-Hasta que el modelo se entrene y valide con datos reales (Sprint 3), el sistema usa una regla provisional, visible como tal en la página:
+## 5. Datos de práctica
 
-- **Riesgo alto:** promedio general menor de 11, o promedio de exámenes menor de 9.
-- **Riesgo medio:** promedio de exámenes menor de 11, o caída de 2 puntos o más frente al periodo anterior.
-- **Riesgo bajo:** los demás casos.
+`python -m etl.generar_datos_practica` crea un colegio ficticio completo: 135 estudiantes con nombres inventados, 9 grados, 4 cursos por nivel, 3 meses y 7 907 notas, generadas al azar con un comportamiento parecido al real (los trabajos tienen notas más altas que los exámenes; a quien le va mal un mes le suele ir mal el siguiente).
 
-Esta regla será además la referencia contra la que se compare el modelo: si el modelo no la supera, no se justifica.
+Sirven para mostrar el sistema funcionando sin exponer a ningún estudiante. **No se usan para entrenar ni para validar el modelo**: un modelo entrenado con notas inventadas solo aprendería la fórmula con que se inventaron.
+
+## 6. Variables y qué se predice
+
+Se predice si el estudiante desaprobará (menos de 11) el examen del periodo siguiente en un curso. Las variables, el método y los resultados están en [modelo-y-validacion.md](modelo-y-validacion.md).
+
+| Variable | Situación |
+|---|---|
+| Notas de examen, cuaderno, libro, oral, prácticas y conducta | En uso |
+| Examen del periodo anterior y su cambio | En uso |
+| Rendimiento del estudiante en sus otros cursos | En uso |
+| Nivel educativo y área del curso | En uso |
+| Inasistencias e incidencias | No disponibles: se llevan en papel. Las tablas ya existen |
+| Estado de pago de pensiones | **Retirada**: es un dato sensible y el tutor no puede actuar sobre él |

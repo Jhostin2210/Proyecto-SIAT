@@ -18,58 +18,50 @@ from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import func, insert, select
+from sqlalchemy import case, func, insert, select
 
 from etl.database import engine as engine_por_defecto
-from etl.modelo_datos import calidad_datos, cargas, crear_tablas, cursos, estudiantes, notas, periodos
+from etl.modelo_datos import calidad_datos, cargas, crear_tablas, cursos, estudiantes, matriculas, notas, periodos
 
 
 def _reglas(cx) -> list:
     """Cada regla devuelve (nombre, severidad si falla, cantidad, descripción)."""
-    total_notas = cx.execute(select(func.count()).select_from(notas)).scalar() or 0
-    ultimo = cx.execute(select(periodos.c.id, periodos.c.codigo).order_by(periodos.c.codigo.desc())).first()
+    contar = lambda consulta: cx.execute(consulta).scalar() or 0
+    total_notas = contar(select(func.count()).select_from(notas))
+    llave = [notas.c.estudiante_id, notas.c.curso_id, notas.c.periodo_id, notas.c.tipo_evaluacion, notas.c.componente]
 
-    fuera = cx.execute(select(func.count()).select_from(notas).where((notas.c.nota < 0) | (notas.c.nota > 20))).scalar()
-    repetidas = len(
-        cx.execute(
-            select(notas.c.estudiante_id).group_by(notas.c.estudiante_id, notas.c.curso_id, notas.c.periodo_id, notas.c.componente).having(func.count() > 1)
-        ).all()
-    )
-    huerfanas = cx.execute(
+    fuera = contar(select(func.count()).select_from(notas).where((notas.c.nota < 0) | (notas.c.nota > 20)))
+    repetidas = len(cx.execute(select(notas.c.estudiante_id).group_by(*llave).having(func.count() > 1)).all())
+    huerfanas = contar(
         select(func.count())
         .select_from(notas.outerjoin(estudiantes).outerjoin(cursos).outerjoin(periodos))
         .where((estudiantes.c.id.is_(None)) | (cursos.c.id.is_(None)) | (periodos.c.id.is_(None)))
-    ).scalar()
-    en_cero = cx.execute(select(func.count()).select_from(notas).where(notas.c.nota == 0)).scalar()
-
-    sin_ultimo = 0
-    if ultimo:
-        con_notas = select(notas.c.estudiante_id).where(notas.c.periodo_id == ultimo.id).distinct()
-        sin_ultimo = cx.execute(select(func.count()).select_from(estudiantes).where(estudiantes.c.id.not_in(con_notas))).scalar()
-
+    )
+    sin_matricula = contar(select(func.count()).select_from(estudiantes).where(estudiantes.c.id.not_in(select(matriculas.c.estudiante_id))))
+    en_cero = contar(select(func.count()).select_from(notas).where(notas.c.nota == 0))
+    por_validar = contar(select(func.count()).select_from(notas).where(notas.c.validada == 0))
+    sin_apellido = contar(select(func.count()).select_from(estudiantes).where(estudiantes.c.identidad == "solo_nombre"))
     por_estudiante = cx.execute(select(notas.c.estudiante_id, func.count(func.distinct(notas.c.periodo_id))).group_by(notas.c.estudiante_id)).all()
     un_periodo = sum(1 for _, n in por_estudiante if n < 2)
-
-    # Componentes incompletos: un estudiante tiene menos notas que sus compañeros en el mismo curso y periodo.
-    conteos = cx.execute(
-        select(estudiantes.c.grado, notas.c.curso_id, notas.c.periodo_id, notas.c.estudiante_id, func.count())
-        .select_from(notas.join(estudiantes))
-        .group_by(estudiantes.c.grado, notas.c.curso_id, notas.c.periodo_id, notas.c.estudiante_id)
-    ).all()
-    esperado = {}
-    for grado, curso, periodo, _, n in conteos:
-        esperado[(grado, curso, periodo)] = max(esperado.get((grado, curso, periodo), 0), n)
-    incompletos = sum(1 for grado, curso, periodo, _, n in conteos if n < esperado[(grado, curso, periodo)])
+    sin_examen = len(
+        cx.execute(
+            select(notas.c.estudiante_id, notas.c.curso_id, notas.c.periodo_id)
+            .group_by(notas.c.estudiante_id, notas.c.curso_id, notas.c.periodo_id)
+            .having(func.sum(case((notas.c.componente == "examen", 1), else_=0)) == 0)
+        ).all()
+    )
 
     return [
         ("base_con_datos", "critica", 0 if total_notas else 1, "La base tiene notas cargadas."),
         ("notas_fuera_de_rango", "critica", fuera, "Notas menores de 0 o mayores de 20."),
-        ("notas_duplicadas", "critica", repetidas, "Misma nota registrada más de una vez (estudiante, curso, periodo y componente)."),
+        ("notas_duplicadas", "critica", repetidas, "Misma nota registrada más de una vez (estudiante, curso, periodo, tipo y componente)."),
         ("referencias_huerfanas", "critica", huerfanas, "Notas sin estudiante, curso o periodo."),
+        ("estudiantes_sin_matricula", "critica", sin_matricula, "Estudiantes sin año, nivel y grado."),
+        ("notas_por_validar", "aviso", por_validar, "Notas transcritas de cuadernos que falta cotejar con el original."),
         ("notas_en_cero", "aviso", en_cero, "Notas en cero: conviene confirmar si son inasistencias a la evaluación."),
-        ("componentes_incompletos", "aviso", incompletos, "Estudiantes con menos notas que sus compañeros en un curso y periodo."),
-        ("sin_notas_en_ultimo_periodo", "aviso", sin_ultimo, f"Estudiantes sin notas en el último periodo ({ultimo.codigo if ultimo else 'no hay'})."),
-        ("un_solo_periodo", "aviso", un_periodo, "Estudiantes con un solo periodo: el modelo necesita al menos dos consecutivos."),
+        ("identidad_incompleta", "aviso", sin_apellido, "Estudiantes de los que solo se conoce el nombre de pila."),
+        ("cursos_sin_examen", "aviso", sin_examen, "Cursos de un estudiante en un periodo sin nota de examen."),
+        ("un_solo_periodo", "aviso", un_periodo, "Estudiantes con un solo periodo: el modelo necesita al menos dos seguidos."),
     ]
 
 

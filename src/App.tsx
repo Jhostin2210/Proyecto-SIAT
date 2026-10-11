@@ -150,9 +150,11 @@ export default function App() {
   // Estado de la API (tipo de datos, periodo y origen del nivel de riesgo) y última validación de los datos.
   const [estadoApi, setEstadoApi] = useState<any>(null);
   const [calidad, setCalidad] = useState<any>(null);
+  const [metricas, setMetricas] = useState<any>(null);
   useEffect(() => {
     fetch(`${API_URL}/api/estado`).then((r) => (r.ok ? r.json() : null)).then(setEstadoApi).catch(() => setEstadoApi(null));
     fetch(`${API_URL}/api/calidad`).then((r) => (r.ok ? r.json() : null)).then(setCalidad).catch(() => setCalidad(null));
+    fetch(`${API_URL}/api/reporte-metricas`).then((r) => (r.ok ? r.json() : null)).then(setMetricas).catch(() => setMetricas(null));
   }, []);
 
   // De dónde vienen los datos que se muestran: la API en línea o la copia local de ejemplo.
@@ -614,11 +616,13 @@ export default function App() {
           <span className="font-black uppercase tracking-wider">Demostración</span>
           <span>
             {estadoApi?.tipo_datos === "reales"
-              ? "Datos reales del colegio, identificados solo por código."
+              ? "Datos reales del colegio."
               : estadoApi?.tipo_datos === "practica"
-                ? "Datos de práctica: notas inventadas con la estructura del registro del colegio; ningún estudiante es real."
+                ? "Datos de práctica: estudiantes y notas ficticios, con la misma estructura que la base real."
                 : "Datos de ejemplo."}{" "}
-            El nivel de riesgo sale de una regla provisional; el modelo de Machine Learning se entrena con datos reales en el Sprint 3.
+            {estadoApi?.nivel_de_riesgo?.origen === "modelo"
+              ? "El nivel de riesgo lo calcula un modelo de Machine Learning entrenado y validado con datos reales del colegio."
+              : "El nivel de riesgo sale de una regla simple; todavía no hay un modelo entrenado."}
           </span>
           <span className="font-semibold">
             {origenDatos === "cargando" && "Conectando con la API…"}
@@ -1137,6 +1141,59 @@ export default function App() {
                 </div>
               )}
 
+              {/* Validación del modelo: resultados reales del entrenamiento (paquete 1.3.3 de la EDT) */}
+              {seccionActiva === "riesgos" && metricas?.disponible && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-6">
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Modelo de riesgo: cómo se validó</h3>
+                  <p className="text-[11px] text-slate-500 mb-4">
+                    {metricas.que_predice} Entrenado el {metricas.fecha_entrenamiento} con {metricas.datos.casos} casos de {metricas.datos.estudiantes} estudiantes reales;{" "}
+                    {metricas.datos.desaprobados} desaprobaron el examen siguiente ({Math.round(metricas.datos.proporcion_desaprobados * 100)} %). {metricas.validacion.metodo}
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="text-[10px] uppercase text-slate-400 border-b border-slate-100">
+                          <th className="py-2 pr-3">Modelo</th>
+                          <th className="py-2 px-3 text-center" title="Qué tan bien ordena a los estudiantes por riesgo. Al azar valdría lo mismo que la proporción de desaprobados.">Precisión media</th>
+                          <th className="py-2 px-3 text-center">AUC</th>
+                          <th className="py-2 px-3 text-center" title="De los que luego desaprueban, cuántos detecta">Detecta</th>
+                          <th className="py-2 px-3 text-center" title="De sus alertas, cuántas aciertan">Aciertos de sus alertas</th>
+                          <th className="py-2 pl-3 text-center">Casos que alerta</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(metricas.modelos).map(([clave, m]: [string, any]) => (
+                          <tr key={clave} className={`border-b border-slate-50 ${clave === metricas.modelo_elegido.clave ? "bg-emerald-50/60 font-bold text-slate-800" : "text-slate-600"}`}>
+                            <td className="py-2 pr-3">{m.nombre}{clave === metricas.modelo_elegido.clave ? " · en uso" : ""}</td>
+                            <td className="py-2 px-3 text-center">{m.precision_media.media.toFixed(2)} ± {m.precision_media.desviacion.toFixed(2)}</td>
+                            <td className="py-2 px-3 text-center">{m.auc_roc.media.toFixed(2)}</td>
+                            <td className="py-2 px-3 text-center">{Math.round(m.sensibilidad.media * 100)} %</td>
+                            <td className="py-2 px-3 text-center">{Math.round(m.precision.media * 100)} %</td>
+                            <td className="py-2 pl-3 text-center">{Math.round(m.alertas.media * 100)} %</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
+                    {[
+                      ["Riesgo alto", metricas.niveles.fuera_de_muestra.riesgo_alto, "bg-red-50 text-red-700 border-red-100"],
+                      ["Riesgo medio", metricas.niveles.fuera_de_muestra.riesgo_medio, "bg-amber-50 text-amber-700 border-amber-100"],
+                      ["Riesgo bajo", metricas.niveles.fuera_de_muestra.riesgo_bajo, "bg-emerald-50 text-emerald-700 border-emerald-100"],
+                    ].map(([nombre, n, clase]: any) => (
+                      <div key={nombre} className={`p-3 rounded-xl border ${clase}`}>
+                        <p className="text-[10px] font-black uppercase tracking-wide">{nombre}</p>
+                        <p className="text-sm font-black mt-1">{Math.round((n.desaprueban / Math.max(1, n.casos)) * 100)} % desaprobó</p>
+                        <p className="text-[10px] opacity-80">{n.desaprueban} de {n.casos} casos, en datos que el modelo no vio</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-4">
+                    <span className="font-bold text-slate-700">Límites:</span> {metricas.limitaciones.join(" ")}
+                  </p>
+                </div>
+              )}
+
               {/* Sección 3: Riesgos & Simulador */}
               {seccionActiva === "riesgos" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1195,7 +1252,7 @@ export default function App() {
                   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-fit">
                     <div>
                       <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-1">Simulador de Riesgo Académico</h3>
-                      <p className="text-xs text-slate-400 mb-6">Ingrese valores hipotéticos y el modelo de demostración de la API calcula el riesgo. No altera la base de datos.</p>
+                      <p className="text-xs text-slate-400 mb-6">Ingrese las notas de un curso y el modelo estima la probabilidad de desaprobar el próximo examen. No altera la base de datos.</p>
                     </div>
 
                     <form onSubmit={handleSimularForm} className="space-y-4">
@@ -1267,7 +1324,7 @@ export default function App() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Inasistencias</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Inasistencias (aún no se usa)</label>
                           <input
                             type="number"
                             min="0"
@@ -1277,7 +1334,7 @@ export default function App() {
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Pensión</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Pensión (no se usa)</label>
                           <select
                             value={estadoPension}
                             onChange={(e) => setEstadoPension(e.target.value)}
