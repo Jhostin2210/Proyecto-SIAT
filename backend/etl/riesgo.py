@@ -1,92 +1,99 @@
 """
 SIA-T: nivel de riesgo de cada estudiante.
 
-Si existe un modelo entrenado (models/modelo_riesgo.joblib), el nivel sale de él: para cada curso se
-estima la probabilidad de desaprobar el próximo examen, y el riesgo del estudiante es el promedio de
-sus cursos. Si un solo curso está en riesgo alto, el estudiante queda como mínimo en riesgo medio. Si no hay modelo, se usa una regla simple y visible, que es además la referencia contra la
-que se compara el modelo.
+Para cada curso, la red neuronal estima la probabilidad de que al estudiante le vaya mal y la
+probabilidad se lleva a tres niveles: bajo, medio y alto. El riesgo general del estudiante junta
+sus cursos (ver etl/informe.py).
 
-Tres niveles: bajo, medio y alto. Los cortes del modelo se fijan al entrenarlo.
+Si no existe el archivo del modelo, se usa una regla por nota y queda rotulado como tal.
 """
 
 import os
 from datetime import datetime
 
 import joblib
+import pandas as pd
 from sqlalchemy import delete, insert, select
 
-from etl.modelo_datos import periodos, predicciones
-from etl.variables import NOTA_APROBATORIA, VARIABLES, construir_casos, leer_notas
+from etl.informe import ALTO, BAJO, MEDIO, armar_informe, nivel_de
+from etl.modelo_datos import crear_tablas, periodos, predicciones
+from etl.perfil import completar_perfiles, leer_perfiles
+from etl.variables import entradas_del_modelo, leer_notas, rendimiento_por_curso
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RUTA_MODELO = os.path.join(BASE, "models", "modelo_riesgo.joblib")
-VERSION_REGLA = "regla_provisional_v2"
-ORDEN_NIVEL = {"Riesgo bajo": 0, "Riesgo medio": 1, "Riesgo alto": 2}
+RUTA_MODELO = os.path.join(BASE, "models", "red_neuronal_riesgo.joblib")
+VERSION_REGLA = "regla_por_nota_v1"
+# Sin modelo: probabilidad fija por rango de nota, solo para ordenar.
+UMBRALES_REGLA = {"medio": 0.3, "alto": 0.7}
+_modelo = {}
 
 
 def cargar_modelo():
-    return joblib.load(RUTA_MODELO) if os.path.exists(RUTA_MODELO) else None
+    """Devuelve el paquete del modelo (pipeline, variables, umbrales, versión) o None si no hay archivo."""
+    if not os.path.exists(RUTA_MODELO):
+        return None
+    fecha = os.path.getmtime(RUTA_MODELO)
+    if _modelo.get("fecha") != fecha:
+        _modelo.update(fecha=fecha, paquete=joblib.load(RUTA_MODELO))
+    return _modelo["paquete"]
 
 
-def regla(caso) -> tuple:
-    """Regla de referencia sobre un curso: devuelve (nivel, motivo)."""
-    examen, trabajos, cambio = caso.get("examen"), caso.get("trabajos"), caso.get("cambio_examen")
-    referencia = examen if examen == examen else trabajos  # un valor vacío (NaN) no es igual a sí mismo
-    if referencia != referencia:
-        return "Riesgo bajo", "sin notas suficientes"
-    if referencia < NOTA_APROBATORIA:
-        return "Riesgo alto", f"nota de {referencia:.0f}"
-    baja = cambio == cambio and cambio <= -3
-    if referencia < 13 or baja:
-        return "Riesgo medio", f"nota de {referencia:.0f}" + (f", bajó {abs(cambio):.0f} puntos" if baja else "")
-    return "Riesgo bajo", "sin señales"
+def evaluar_cursos(engine) -> tuple:
+    """Devuelve (casos, origen): una fila por estudiante, curso y periodo con «probabilidad» y «nivel»."""
+    casos = rendimiento_por_curso(leer_notas(engine))
+    if casos.empty:
+        return casos, {"origen": None, "version": None, "umbrales": UMBRALES_REGLA}
+    modelo = cargar_modelo()
+    if modelo:
+        X = entradas_del_modelo(casos, leer_perfiles(engine), modelo["variables"], modelo["aprobatoria"])
+        casos["probabilidad"] = modelo["pipeline"].predict_proba(X)[:, 1]
+        origen = {"origen": "modelo", "version": modelo["version"], "umbrales": modelo["umbrales"]}
+    else:
+        casos["probabilidad"] = casos["nota"].map(lambda n: 0.85 if n < 10 else 0.4 if n < 15 else 0.05)
+        origen = {"origen": "regla_provisional", "version": VERSION_REGLA, "umbrales": UMBRALES_REGLA}
+    casos["nivel"] = casos["probabilidad"].map(lambda p: nivel_de(p, origen["umbrales"]))
+    return casos, origen
+
+
+def _nulo(valor):
+    return None if pd.isna(valor) else round(float(valor), 1)
+
+
+def cursos_del_periodo(grupo: pd.DataFrame) -> list:
+    return [
+        {"curso": f.curso, "area": f.area, "nota": round(float(f.nota), 1), "examen": _nulo(f.examen), "trabajos": _nulo(f.trabajos), "nota_previa": _nulo(f.nota_previa), "cambio": _nulo(f.cambio), "probabilidad": round(float(f.probabilidad), 3), "nivel": f.nivel, "por_validar": bool(f.por_validar)}
+        for f in grupo.itertuples()
+    ]
+
+
+def informes(engine, nombres: dict = None) -> tuple:
+    """Informe de cada estudiante en su último periodo. Devuelve ({id: informe}, origen)."""
+    casos, origen = evaluar_cursos(engine)
+    if casos.empty:
+        return {}, origen
+    actuales = casos[casos["orden"] == casos.groupby("est")["orden"].transform("max")]
+    resultado = {}
+    for est, grupo in actuales.groupby("est"):
+        primero = grupo.iloc[0]
+        informe = armar_informe((nombres or {}).get(int(est), "el estudiante"), primero["grado"], primero["periodo_nombre"], cursos_del_periodo(grupo), origen["umbrales"])
+        resultado[int(est)] = {**informe, "periodo": primero["periodo"], "periodo_nombre": primero["periodo_nombre"], "grado": primero["grado"], "nivel_educativo": primero["nivel_educativo"]}
+    return resultado, origen
 
 
 def calcular_riesgo(engine) -> dict:
-    """Recalcula el nivel de riesgo de cada estudiante en su último periodo. Devuelve un resumen."""
-    casos = construir_casos(leer_notas(engine))
-    if casos.empty:
+    """Recalcula y guarda el nivel de riesgo general de cada estudiante en su último periodo. Devuelve un resumen."""
+    crear_tablas(engine)
+    completar_perfiles(engine)
+    por_estudiante, origen = informes(engine)
+    if not por_estudiante:
         return {"origen": None, "estudiantes": 0}
-    # Último periodo de cada estudiante y, dentro de él, todos sus cursos.
-    actuales = casos[casos["orden"] == casos.groupby("est")["orden"].transform("max")].copy()
-
-    modelo = cargar_modelo()
-    if modelo:
-        actuales["prob"] = modelo["pipeline"].predict_proba(actuales[VARIABLES])[:, 1]
-        t_medio, t_alto = modelo["umbrales"]["medio"], modelo["umbrales"]["alto"]
-        actuales["nivel"] = actuales["prob"].map(lambda p: "Riesgo alto" if p >= t_alto else "Riesgo medio" if p >= t_medio else "Riesgo bajo")
-        actuales["detalle"] = actuales["prob"].map(lambda p: f"{p:.0%}")
-        origen, version = "modelo", modelo["version"]
-    else:
-        resultado = [regla(f) for f in actuales.to_dict("records")]
-        actuales["nivel"], actuales["detalle"] = [r[0] for r in resultado], [r[1] for r in resultado]
-        actuales["prob"] = 0.0
-        origen, version = "regla_provisional", VERSION_REGLA
-
-    actuales["rango"] = actuales["nivel"].map(ORDEN_NIVEL)
-    filas = []
-    for est, grupo in actuales.groupby("est"):
-        grupo = grupo.sort_values(["rango", "prob"], ascending=False)
-        peor, en_riesgo = grupo.iloc[0], grupo[grupo["rango"] > 0]
-        nivel, prob = peor["nivel"], None
-        if modelo:
-            # Riesgo general del estudiante: promedio de sus cursos. Un solo curso en alto lo deja, como mínimo, en medio.
-            prob = float(grupo["prob"].mean())
-            nivel = "Riesgo alto" if prob >= t_alto else "Riesgo medio" if prob >= t_medio or peor["rango"] == 2 else "Riesgo bajo"
-        if en_riesgo.empty:
-            motivo = "Ningún curso con señales de riesgo."
-        elif modelo:
-            motivo = "Probabilidad de desaprobar el próximo examen: " + ", ".join(f"{f.curso} ({f.detalle})" for f in en_riesgo.head(3).itertuples()) + "."
-        else:
-            motivo = "Cursos con señales: " + ", ".join(f"{f.curso} ({f.detalle})" for f in en_riesgo.head(3).itertuples()) + "."
-        filas.append({"est": int(est), "periodo": peor["periodo"], "nivel": nivel, "prob": prob, "motivo": motivo})
-
     with engine.begin() as cx:
         ids_periodo = {codigo: pid for pid, codigo in cx.execute(select(periodos.c.id, periodos.c.codigo))}
         cx.execute(delete(predicciones))
         ahora = datetime.now()
         cx.execute(
             insert(predicciones),
-            [{"estudiante_id": f["est"], "periodo_id": ids_periodo[f["periodo"]], "nivel_riesgo": f["nivel"], "probabilidad": f["prob"], "origen": origen, "version": version, "motivo": f["motivo"], "fecha": ahora} for f in filas],
+            [{"estudiante_id": est, "periodo_id": ids_periodo[i["periodo"]], "nivel_riesgo": i["nivel"], "probabilidad": i["probabilidad"], "origen": origen["origen"], "version": origen["version"], "motivo": i["resumen"], "fecha": ahora} for est, i in por_estudiante.items()],
         )
-    return {"origen": origen, "version": version, "estudiantes": len(filas), "niveles": {n: sum(1 for f in filas if f["nivel"] == n) for n in ORDEN_NIVEL}}
+    niveles = {n: sum(1 for i in por_estudiante.values() if i["nivel"] == n) for n in (BAJO, MEDIO, ALTO)}
+    return {"origen": origen["origen"], "version": origen["version"], "estudiantes": len(por_estudiante), "niveles": niveles}

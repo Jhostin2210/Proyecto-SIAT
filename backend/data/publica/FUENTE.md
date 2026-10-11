@@ -6,4 +6,4 @@
 - **Licencia:** Creative Commons Atribución 4.0 (CC BY 4.0).
 - **Contenido:** estudiantes de secundaria de dos colegios de Portugal. Notas de 0 a 20 en tres periodos (`G1`, `G2`, `G3`; se aprueba con 10), inasistencias (`absences`), cursos desaprobados antes (`failures`), horas de estudio, apoyo escolar y datos de contexto. Es una base anónima.
 
-No son datos del colegio Peruano Francés. Se usan solo como modelo de referencia (`python -m ml.modelo_referencia`).
+No son datos del colegio Peruano Francés. Con ellos se entrena y se prueba la red neuronal (`python -m ml.entrenar_red_neuronal`).

@@ -103,6 +103,41 @@ notas = Table(
     CheckConstraint(_en("confianza", ("alta", "media")), name="chk_confianza"),
 )
 
+# Perfil del estudiante: lo que el modelo usa además de las notas (historial, familia y hábitos).
+# Los valores usan los códigos de la base con que se entrenó el modelo; etl/perfil.py los describe.
+perfiles = Table(
+    "perfiles",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("estudiante_id", Integer, ForeignKey("estudiantes.id", ondelete="CASCADE"), nullable=False, unique=True),
+    Column("sexo", String(1)),
+    Column("edad", Integer),
+    Column("tam_familia", String(3)),
+    Column("padres_juntos", String(1)),
+    Column("educ_madre", Integer),
+    Column("educ_padre", Integer),
+    Column("ocup_madre", String(10)),
+    Column("ocup_padre", String(10)),
+    Column("apoderado", String(10)),
+    Column("tiempo_viaje", Integer),
+    Column("horas_estudio", Integer),
+    Column("cursos_desaprobados", Integer),
+    Column("apoyo_escolar", String(3)),
+    Column("apoyo_familiar", String(3)),
+    Column("clases_pagadas", String(3)),
+    Column("actividades", String(3)),
+    Column("internet", String(3)),
+    Column("pareja", String(3)),
+    Column("relacion_familiar", Integer),
+    Column("tiempo_libre", Integer),
+    Column("salidas", Integer),
+    Column("salud", Integer),
+    Column("inasistencias", Integer),
+    Column("origen", String(10), nullable=False, default="colegio"),
+    Column("actualizado", DateTime, server_default=func.now()),
+    CheckConstraint(_en("origen", ("colegio", "generado")), name="chk_origen_perfil"),
+)
+
 # Asistencia e incidencias: el colegio todavía las lleva en papel; las tablas quedan listas.
 asistencia = Table(
     "asistencia",
@@ -126,7 +161,7 @@ incidencias = Table(
     Column("descripcion", Text),
 )
 
-# Nivel de riesgo por estudiante y periodo. «probabilidad» es la del curso con mayor riesgo.
+# Nivel de riesgo general por estudiante y periodo. «probabilidad» es el promedio de sus cursos.
 predicciones = Table(
     "predicciones",
     metadata,

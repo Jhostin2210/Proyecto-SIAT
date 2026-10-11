@@ -1,0 +1,231 @@
+{
+ "fecha_entrenamiento": "2026-10-10 21:55",
+ "version": "red_neuronal_20261010",
+ "nombre": "Red neuronal",
+ "base": {
+  "nombre": "Student Performance",
+  "autores": "P. Cortez y A. Silva (2008)",
+  "origen": "Repositorio UCI de Machine Learning",
+  "enlace": "https://archive.ics.uci.edu/dataset/320/student+performance",
+  "descripcion": "Estudiantes de secundaria de dos colegios de Portugal, en Matemática y Lenguaje, con notas de 0 a 20.",
+  "registros": 1044,
+  "estudiantes": 662,
+  "con_mal_resultado": 230
+ },
+ "que_predice": "Si al estudiante le irá mal en el curso (nota final desaprobatoria).",
+ "variables": [
+  "age",
+  "Medu",
+  "Fedu",
+  "traveltime",
+  "studytime",
+  "failures",
+  "famrel",
+  "freetime",
+  "goout",
+  "health",
+  "absences",
+  "G1",
+  "G2",
+  "sex",
+  "famsize",
+  "Pstatus",
+  "Mjob",
+  "Fjob",
+  "guardian",
+  "schoolsup",
+  "famsup",
+  "paid",
+  "activities",
+  "internet",
+  "romantic"
+ ],
+ "no_consideradas": [
+  "school",
+  "address",
+  "higher",
+  "reason",
+  "nursery",
+  "Dalc",
+  "Walc"
+ ],
+ "red": {
+  "arquitectura": "35-32-16-8-1",
+  "capas_ocultas": [
+   32,
+   16,
+   8
+  ],
+  "entradas": 35,
+  "activacion": "ReLU",
+  "optimizador": "Adam",
+  "escalado": "StandardScaler",
+  "epocas": 27,
+  "perdida_final": 0.4469,
+  "curva_de_perdida": [
+   2.3904,
+   1.639,
+   1.1722,
+   0.8847,
+   0.713,
+   0.6137,
+   0.5556,
+   0.522,
+   0.4997,
+   0.4864,
+   0.4767,
+   0.4708,
+   0.4669,
+   0.4627,
+   0.4614,
+   0.4585,
+   0.4574,
+   0.4566,
+   0.4562,
+   0.4521,
+   0.4528,
+   0.4542,
+   0.4517,
+   0.4494,
+   0.4526,
+   0.4475,
+   0.4469
+  ]
+ },
+ "particion": {
+  "entrenamiento": 835,
+  "prueba": 209,
+  "metodo": "80 % para entrenar y 20 % para probar, sin repartir a un mismo estudiante entre los dos lados."
+ },
+ "validacion_cruzada": {
+  "exactitud": {
+   "media": 0.878,
+   "desviacion": 0.027
+  },
+  "recall": {
+   "media": 0.902,
+   "desviacion": 0.029
+  },
+  "precision": {
+   "media": 0.669,
+   "desviacion": 0.06
+  },
+  "auc_roc": {
+   "media": 0.955,
+   "desviacion": 0.01
+  }
+ },
+ "entrenamiento": {
+  "matriz": {
+   "verdaderos_negativos": 578,
+   "falsos_positivos": 73,
+   "falsos_negativos": 9,
+   "verdaderos_positivos": 175
+  },
+  "exactitud": 0.902,
+  "auc_roc": 0.974,
+  "le_va_mal": {
+   "precision": 0.706,
+   "recall": 0.951,
+   "f1": 0.81
+  },
+  "le_va_bien": {
+   "precision": 0.985,
+   "recall": 0.888,
+   "f1": 0.934
+  }
+ },
+ "prueba": {
+  "matriz": {
+   "verdaderos_negativos": 135,
+   "falsos_positivos": 28,
+   "falsos_negativos": 6,
+   "verdaderos_positivos": 40
+  },
+  "exactitud": 0.837,
+  "auc_roc": 0.952,
+  "le_va_mal": {
+   "precision": 0.588,
+   "recall": 0.87,
+   "f1": 0.702
+  },
+  "le_va_bien": {
+   "precision": 0.957,
+   "recall": 0.828,
+   "f1": 0.888
+  }
+ },
+ "exactitud_sin_modelo": 0.78,
+ "niveles": {
+  "alto_desde": 0.689,
+  "medio_desde": 0.05,
+  "equivalencia": "En un estudiante típico: riesgo alto con nota menor de 10, medio de 10 a 14 y bajo desde 15.",
+  "curva": [
+   {
+    "nota": 5,
+    "probabilidad": 0.902
+   },
+   {
+    "nota": 6,
+    "probabilidad": 0.889
+   },
+   {
+    "nota": 7,
+    "probabilidad": 0.875
+   },
+   {
+    "nota": 8,
+    "probabilidad": 0.849
+   },
+   {
+    "nota": 9,
+    "probabilidad": 0.764
+   },
+   {
+    "nota": 10,
+    "probabilidad": 0.597
+   },
+   {
+    "nota": 11,
+    "probabilidad": 0.389
+   },
+   {
+    "nota": 12,
+    "probabilidad": 0.207
+   },
+   {
+    "nota": 13,
+    "probabilidad": 0.105
+   },
+   {
+    "nota": 14,
+    "probabilidad": 0.061
+   },
+   {
+    "nota": 15,
+    "probabilidad": 0.041
+   },
+   {
+    "nota": 16,
+    "probabilidad": 0.027
+   },
+   {
+    "nota": 17,
+    "probabilidad": 0.018
+   },
+   {
+    "nota": 18,
+    "probabilidad": 0.012
+   },
+   {
+    "nota": 19,
+    "probabilidad": 0.008
+   },
+   {
+    "nota": 20,
+    "probabilidad": 0.005
+   }
+  ]
+ },
+ "sklearn_version": "1.9.1"
+}

@@ -1,141 +1,136 @@
-# Modelo de riesgo: entrenamiento y validación
+# Modelo de riesgo: entrenamiento y prueba
 
-Las cifras salen de `backend/data/metrics_report.json`, que escribe el propio entrenamiento (`python -m ml.entrenar_modelo`). Entrenado el 10/10/2026 con los datos reales del colegio, en un equipo del proyecto. Este documento no contiene datos de ningún estudiante.
+Paquetes 1.3.1 y 1.3.3 de la EDT. Las cifras salen de `backend/data/red_neuronal_report.json` y `backend/data/aplicacion_colegio.json`, que escriben los propios programas de entrenamiento y de comprobación. Entrenado el 10/10/2026. Este documento no contiene datos de ningún estudiante.
 
-## 1. Qué predice
+## 1. Enfoque
 
-Para cada estudiante, curso y periodo: **si desaprobará (menos de 11) el examen del periodo siguiente en ese curso**, usando solo las notas que ya se conocen en el periodo actual.
+El modelo se entrena y se prueba con una base pública. Después, el archivo ya entrenado se aplica a los datos del colegio, que no participan del entrenamiento.
 
-Se eligió el examen del periodo siguiente porque es el dato más objetivo y el que más se repite en la base, y porque da al tutor un mes para actuar.
+Se eligió así porque el colegio todavía tiene pocos casos propios para entrenar una red neuronal: 44 con mal resultado, frente a 230 en la base pública.
 
-## 2. Con qué datos
+## 2. Base de entrenamiento
+
+*Student Performance* (P. Cortez y A. Silva, 2008), del repositorio UCI de Machine Learning, con licencia CC BY 4.0. Los archivos están en `backend/data/publica/`, sin modificar.
 
 | Medida | Valor |
 |---|---|
-| Casos (estudiante, curso y periodo con examen en el periodo siguiente) | 519 |
-| Estudiantes | 146 |
-| Casos que desaprobaron el examen siguiente | 64 (12,3 %) |
-| Casos que incluyen notas por validar (transcritas de cuadernos) | 177 |
+| Registros | 1 044 (395 de Matemática y 649 de Lenguaje) |
+| Estudiantes | 662, de secundaria, de dos colegios de Portugal |
+| Escala de notas | 0 a 20; se aprueba con 10 |
+| Registros con mal resultado (nota final menor de 10) | 230 (22 %) |
 
-| Periodo actual → periodo que se predice | Casos | Desaprobaron |
-|---|---|---|
-| Noviembre → diciembre de 2025 | 113 | 17 |
-| Marzo → abril de 2026 | 185 | 16 |
-| Marzo → primer trimestre de 2026 | 4 | 2 |
-| Abril → mayo de 2026 | 118 | 10 |
-| Abril → primer trimestre de 2026 | 99 | 19 |
-
-Los datos de práctica de la demostración **no participan** del entrenamiento ni de la validación.
+**Qué predice:** si al estudiante le irá mal en el curso.
 
 ## 3. Variables
 
-Todas salen de las notas. Las calcula `backend/etl/variables.py`, que usan por igual el entrenamiento y el cálculo del riesgo.
+De las 32 columnas de entrada de la base se usan 25. No se consideran: `school`, `address`, `higher`, `reason`, `nursery`, `Dalc` y `Walc`.
 
-| Variable | Qué es |
+| Grupo | Variables |
 |---|---|
-| `examen` | Nota de examen del periodo en el curso |
-| `trabajos` | Promedio de cuaderno, libro, oral, prácticas y exposiciones |
-| `cuaderno`, `libro`, `oral`, `conducta` | Cada nota por separado |
-| `minimo` | Nota más baja del periodo en el curso |
-| `n_notas` | Cantidad de notas registradas |
-| `examen_previo`, `cambio_examen` | Examen del periodo anterior y diferencia con el actual |
-| `examen_otros_cursos`, `trabajos_otros_cursos` | Cómo le va al estudiante en sus otros cursos ese periodo |
-| `secundaria`, `area_*` | Nivel educativo y área del curso |
+| Notas | Nota del periodo anterior (`G1`) y del periodo actual (`G2`) |
+| Historial y colegio | Edad, inasistencias, cursos desaprobados antes, horas de estudio, apoyo escolar, clases particulares, tiempo de viaje |
+| Familia | Sexo, tamaño de la familia, si los padres viven juntos, estudios y ocupación de la madre y del padre, apoderado, apoyo familiar, internet, relación familiar |
+| Hábitos | Actividades extracurriculares, relación sentimental, tiempo libre, salidas con amigos, salud |
 
-No se usan la asistencia ni las incidencias (el colegio las lleva en papel) ni el pago de pensiones (se retiró: es un dato sensible y el tutor no puede actuar sobre él).
+En el sistema, estas variables están en la tabla `perfiles` (ver [arquitectura.md](arquitectura.md)); `backend/etl/perfil.py` describe cada una.
 
-## 4. Cómo se validó
+## 4. Modelo
 
-- **Validación cruzada estratificada y agrupada por estudiante**, en 5 partes y repetida 10 veces. Agrupar por estudiante impide que el mismo estudiante esté a la vez en el entrenamiento y en la prueba, que es la forma más común de obtener resultados inflados.
-- **Todo el preparado de los datos va dentro del modelo** (valores faltantes, escalas), de modo que se ajusta solo con los datos de entrenamiento de cada parte.
-- **Clases desbalanceadas:** solo 12 % desaprueba, así que los modelos pesan más esos casos. No se usa la exactitud, que con este desbalance se obtiene prediciendo que nadie desaprueba (88 %).
-- **El corte se elige dentro de cada entrenamiento**, buscando detectar al menos 75 % de los que desaprueban, y se mide en la parte que el modelo no vio.
-- **Referencias obligatorias:** una regla simple y una regresión logística. El bosque aleatorio solo se justifica si las supera.
-- **Parámetros fijos**, sin búsqueda: con tan pocos datos, ajustarlos produciría resultados optimistas.
+Red neuronal densa (`MLPClassifier` de scikit-learn).
 
-## 5. Resultados
+| Elemento | Valor |
+|---|---|
+| Arquitectura | 35-32-16-8-1: 35 entradas (las 25 variables, con las categorías separadas), tres capas ocultas y una salida con la probabilidad |
+| Activación | ReLU |
+| Optimizador | Adam |
+| Preparación | StandardScaler sobre todas las entradas |
+| Regularización | `alpha` = 1,0 y detención temprana (se detuvo en la época 27) |
+| Clases | Los casos con mal resultado se repiten en el entrenamiento hasta igualar las clases |
 
-Media y desviación entre las 10 repeticiones.
+Se compararon dos niveles de regularización. Con `alpha` = 0,01 la exactitud en la prueba es mayor (89,5 %), pero la red memoriza (99 % en el entrenamiento) y responde casi siempre 0 o 1, lo que no permite separar tres niveles. Con `alpha` = 1,0 las probabilidades son graduales. Se usa esta.
 
-| Modelo | Precisión media | AUC | Detecta (sensibilidad) | Aciertos de sus alertas (precisión) | Casos que alerta |
-|---|---|---|---|---|---|
-| Regla simple (ordena por la nota de examen) | 0,27 | 0,71 | 76 % | 16 % | 57 % |
-| Regresión logística | 0,38 ± 0,02 | 0,74 ± 0,02 | 76 % | 19 % | 51 % |
-| **Bosque aleatorio (en uso)** | **0,40 ± 0,02** | **0,75 ± 0,02** | 75 % | 20 % | 47 % |
+No se usa TensorFlow porque el servidor de la demostración no tiene memoria suficiente; la red de scikit-learn es equivalente para este tamaño.
 
-Para comparar: la regla más natural, «alertar a quien desaprobó el examen de este mes», detecta solo 33 % de los que desaprueban el siguiente, con 32 % de aciertos.
+## 5. Prueba
 
-**Lectura.** Si se alertara al azar, la precisión media sería 0,12; el modelo llega a 0,40. Supera a la regla simple y a la regresión logística, pero por un margen moderado. Para detectar a tres de cada cuatro estudiantes que desaprobarán, hay que alertar casi a la mitad de los casos, y de cada cinco alertas una acierta. Con estos datos el modelo sirve para **ordenar a quién mirar primero**, no para afirmar quién va a desaprobar.
+80 % de los registros para entrenar (835) y 20 % para probar (209). Un mismo estudiante, que aparece en Matemática y en Lenguaje, queda siempre en un solo lado.
 
-### Los tres niveles
+**Matriz de confusión, con los 209 registros que la red no vio:**
 
-Los cortes se fijaron con las predicciones sobre datos que el modelo no vio: riesgo medio desde una probabilidad de 0,25 y riesgo alto desde 0,57.
-
-| Nivel | Casos | Desaprobaron el examen siguiente |
+| | Predijo que bien | Predijo que mal |
 |---|---|---|
-| Riesgo alto | 50 | 25 (50 %) |
-| Riesgo medio | 176 | 23 (13 %) |
-| Riesgo bajo | 293 | 16 (5 %) |
+| **Le fue bien** (163) | 135 | 28 |
+| **Le fue mal** (46) | 6 | 40 |
 
-Los niveles ordenan bien: en riesgo alto desaprueba uno de cada dos; en riesgo bajo, uno de cada veinte.
+| Medida | Valor |
+|---|---|
+| Exactitud (accuracy) | 83,7 % |
+| AUC | 0,95 |
+| Detecta (recall de «le va mal») | 87 % |
+| Aciertos de sus alertas (precisión de «le va mal») | 59 % |
+| F1 de «le va mal» | 0,70 |
+| Exactitud en el entrenamiento | 90,2 % |
+| Validación cruzada de 5 partes, dentro del entrenamiento | 87,8 % ± 2,7 de exactitud; AUC 0,96 |
 
-Una advertencia: el corte de riesgo alto se eligió, con estas mismas predicciones, como el punto desde el cual desaprueba al menos la mitad. El 50 % del nivel alto es entonces el criterio con que se fijó el corte, no una medición independiente; hay que confirmarlo con datos nuevos.
+Para comparar: decir que a nadie le irá mal acierta 78 %. Y la regla más simple, «le fue mal en el periodo anterior», acierta 89,5 % en esta misma prueba: en esta base, la nota del periodo anterior ya explica casi todo. Lo que la red agrega es una probabilidad, que permite ordenar a los estudiantes y definir niveles.
 
-El riesgo de un **estudiante** es el promedio de sus cursos; si un solo curso está en riesgo alto, el estudiante queda como mínimo en riesgo medio.
+## 6. Los tres niveles
 
-### Solo con notas validadas
+La probabilidad de la red se divide en tres niveles. Los cortes son la probabilidad que la red da, en un estudiante típico, a las notas 9,5 y 14,5 del colegio.
 
-Al repetir la validación sin las notas transcritas de cuadernos (342 casos, 30 desaprobados), el bosque aleatorio obtiene una precisión media de 0,40 y un AUC de 0,75: el resultado no depende de las notas por validar.
+| Nivel | Probabilidad | Equivale, en un estudiante típico, a una nota |
+|---|---|---|
+| Riesgo alto | 0,69 o más | menor de 10 |
+| Riesgo medio | de 0,05 a 0,69 | de 10 a 14 |
+| Riesgo bajo | menos de 0,05 | de 15 a 20 |
 
-### Variables que más pesan
+No es un corte por nota: los demás datos del estudiante pueden moverlo de nivel.
 
-Trabajos del curso (0,17), examen en los otros cursos (0,11), trabajos en los otros cursos (0,11), nota oral (0,09), nota más baja (0,09) y examen del curso (0,08).
+En el colegio se aprueba con 11 y en la base pública con 10, así que a las notas del colegio se les resta un punto antes de pasarlas a la red. La nota del curso es el promedio del examen y de los trabajos del periodo. Si no hay periodo anterior, se toma la misma nota actual. La red se entrenó con estudiantes de 15 a 22 años; la edad se lleva a ese rango.
 
-## 6. Frente al criterio del proyecto
+**Riesgo general del estudiante.** Se juntan sus cursos: la probabilidad general es el promedio de sus cursos, y basta un curso en riesgo alto para que el estudiante quede en riesgo alto. `backend/etl/informe.py` reconoce además el patrón (un curso o varios, exámenes frente a trabajos, caída reciente), propone acciones y redacta el comunicado al apoderado.
 
-El criterio de aceptación pide detectar al menos 75 % de los estudiantes en riesgo. Se cumple (75 %), pero al costo descrito arriba: muchas alertas que no se confirman. Antes del piloto conviene decidir con el colegio cuántas alertas por tutor son manejables y, si hace falta, usar solo el nivel alto para las alertas por correo.
+## 7. Aplicación en el colegio
 
-## 7. Límites
+`python -m ml.comprobar_en_colegio`, con la base de datos reales en local. La red no se entrena con estos datos. Para cada estudiante y curso se toma el nivel que dio la red en un periodo y se compara con lo que pasó en el periodo siguiente: si la nota del curso fue menor de 11.
 
-- **Pocos datos.** 64 casos desaprobados; por eso se informa la media y la desviación, y los resultados pueden cambiar con más datos.
-- **Notas por validar.** Las transcritas de fotografías de cuadernos faltan cotejarse con el original.
-- **Solo notas.** Sin asistencia ni incidencias en formato digital.
-- **Pocos docentes y cursos.** La validación debe repetirse con las exportaciones completas de Cubicol.
-- **Sin prueba en el tiempo.** Todavía no hay periodos suficientes para entrenar con un trimestre y probar con el siguiente; es el paso que sigue.
-- **Falta la validación en campo:** comparar las alertas con el juicio de los docentes y con el resultado real del bimestre, durante el piloto.
+Son 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
 
-## 8. Cómo repetirlo
+| Nivel que dio la red | Casos | Les fue mal después |
+|---|---|---|
+| Riesgo alto | 20 | 11 (55 %) |
+| Riesgo medio | 159 | 23 (14 %) |
+| Riesgo bajo | 379 | 10 (3 %) |
 
-Desde `backend`, con el entorno activo y la base real en local:
+| Si se alerta… | Exactitud | Detecta | Aciertos de sus alertas |
+|---|---|---|---|
+| Solo el nivel alto | 92,5 % | 25 % (11 de 44) | 55 % |
+| Los niveles medio y alto | 72,2 % | 77 % (34 de 44) | 19 % |
+
+AUC en el colegio: 0,83. Sin modelo, decir que a nadie le irá mal acierta 92,1 %; por eso la exactitud sola no sirve para juzgar las alertas.
+
+**Lectura.** Los niveles ordenan bien: en riesgo alto le va mal a uno de cada dos, y en riesgo bajo a tres de cada cien. El nivel alto es una alerta razonable. El nivel medio acierta poco y sirve como lista de seguimiento. Separar por rangos de nota da un resultado muy parecido: hoy la red aporta sobre todo la probabilidad y un procedimiento entrenado y probado.
+
+**Frente al criterio del proyecto** (detectar al menos 75 % de los estudiantes en riesgo): se cumple usando los niveles medio y alto (77 %), al costo de muchas alertas que no se confirman. La forma de medir este criterio sigue en evaluación (SC-08).
+
+## 8. Límites
+
+- La red se entrenó con estudiantes de secundaria de otro país. Lo que mejor se traslada es la relación entre la nota y el riesgo; lo demás no está comprobado para el colegio.
+- En el colegio hay pocos casos con mal resultado (44): los porcentajes pueden cambiar con más datos. El 55 % del nivel alto sale de 20 casos.
+- No predicen lo mismo: la base pública predice la nota final del curso; en el colegio se aplica periodo a periodo.
+- Falta comprobar las alertas en un periodo nuevo y contrastarlas con el criterio de los docentes, en el piloto.
+- Las acciones recomendadas son una propuesta del equipo: deben validarse con los docentes y con psicología.
+- Cuando el colegio acumule uno o dos años completos de datos, conviene volver a entrenar con ellos.
+
+## 9. Cómo repetirlo
+
+Desde `backend`, con el entorno activo:
 
 ```powershell
+python -m ml.entrenar_red_neuronal            # entrena, prueba y guarda la red (un minuto)
+
 $env:SQLITE_PATH = "data/privado/sia_t_reales.db"
-python -m etl.cargar_notas "ruta\a\la base consolidada.xlsx"
-python -m ml.entrenar_modelo
+python -m ml.comprobar_en_colegio             # aplica la red a los datos reales y compara
 ```
 
-Tarda unos diez minutos. Escribe `models/modelo_riesgo.joblib` y `data/metrics_report.json`. El archivo del modelo contiene los árboles y los cortes, no las notas de ningún estudiante.
-
-## 9. Modelo de referencia con una base pública
-
-Para saber hasta dónde llega el método con datos completos, se repitió con una base pública ya estudiada: *Student Performance* (Cortez y Silva, 2008; repositorio UCI, licencia CC BY 4.0). Son 1 044 registros de 662 estudiantes de secundaria de dos colegios de Portugal, en Matemática y Lenguaje, con notas de 0 a 20 en tres periodos, inasistencias, cursos desaprobados antes y datos de contexto. Se predice si el estudiante desaprueba el curso (nota final menor de 10); desaprueba 22 %. Los archivos están en `backend/data/publica/` y el reporte en `backend/data/referencia_report.json` (`python -m ml.modelo_referencia`).
-
-Misma validación: cruzada, agrupada por estudiante, 5 partes, 10 repeticiones. Corte de 0,5.
-
-| Con qué datos | Exactitud | AUC | Detecta | Aciertos de sus alertas |
-|---|---|---|---|---|
-| Base pública, con las notas de los dos periodos anteriores | 92 % | 0,97 | 88 % | 79 % |
-| Base pública, con la nota de un solo periodo anterior | 87 % | 0,93 | 79 % | 67 % |
-| Base pública, sin notas: solo inasistencias, historial y contexto | 80 % | 0,79 | 40 % | 56 % |
-| **Entrenado con la base pública y probado con los resultados reales del colegio** | 87 % | 0,71 | 30 % | 46 % |
-
-Sin modelo, decir que nadie desaprueba acierta 78 % en la base pública y 88 % en el colegio.
-
-**Qué se concluye**
-
-- Con datos completos, el método funciona bien: 92 % de exactitud y detecta a 88 % de los que desaprueban.
-- Lo que más pesa son las notas de los periodos anteriores (G2 y G1 suman dos tercios del peso); después, los cursos desaprobados antes y las inasistencias.
-- **Un modelo entrenado con la base pública no sirve tal cual en el colegio.** Para aplicarlo solo puede usar las columnas que el colegio también tiene (nota actual y anterior). Probado con los 519 casos reales, obtiene un AUC de 0,71 y detecta a 30 % de los que desaprueban: igual que la regla simple y por debajo del modelo entrenado con los datos del colegio (AUC 0,75). Su 87 % de exactitud es menor que el 88 % de no alertar a nadie.
-- La razón es que no son el mismo problema: la base pública predice la nota final del curso a partir de notas de periodo, que se parecen mucho entre sí; el colegio predice el examen del mes siguiente, que varía más.
-
-Por eso el nivel de riesgo del sistema lo sigue calculando el modelo entrenado con los datos del colegio. La base pública queda como referencia del método y como argumento para pedir al colegio lo que falta: notas de cierre de periodo de todos los cursos, inasistencias e historial.
+El primero escribe `models/red_neuronal_riesgo.joblib` (preparación de los datos, escalador, red y cortes, en un solo archivo) y `data/red_neuronal_report.json`. El segundo, `data/aplicacion_colegio.json`.

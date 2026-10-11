@@ -73,12 +73,13 @@ Lo que la validación automática avisa sobre la base ya cargada (ninguna regla 
 | Notas en cero | 56 | Conviene confirmar si son inasistencias a la evaluación |
 | Estudiantes con un solo periodo | 24 | No sirven para entrenar: el modelo necesita dos periodos seguidos |
 
-**Conclusión.** La base alcanza para entrenar y validar un primer modelo (519 casos de 146 estudiantes), con resultados que se informan con su margen de variación. No alcanza para darlo por definitivo: faltan las exportaciones completas de Cubicol, cotejar las notas transcritas, y la asistencia y las incidencias en formato digital.
+**Conclusión.** La base alcanza para aplicar el modelo y comprobar sus resultados (558 casos de 146 estudiantes con dos periodos seguidos en un mismo curso). No alcanza todavía para entrenar una red neuronal con datos propios: faltan las exportaciones completas de Cubicol y cotejar las notas transcritas.
 
 ## 4. Identidad de los estudiantes
 
 - Cada estudiante tiene un **código único** (`E-0001`…), asignado en orden aleatorio. Es lo que usa el sistema para identificarlo.
-- La base guarda **nombres, un apellido, año, nivel y grado**. No guarda DNI, fecha de nacimiento, dirección ni datos de los apoderados.
+- La base guarda **nombres, un apellido, año, nivel y grado**, y el **perfil** que usa el modelo (historial, familia y hábitos). No guarda DNI, fecha de nacimiento, dirección ni teléfonos.
+- El perfil incluye datos de la familia y del estado de salud, que son datos personales sensibles: su tratamiento requiere el consentimiento de los apoderados (Ley N.° 29733).
 - La relación entre el nombre completo del registro y el código queda en `backend/data/privado/`, que no se sube al repositorio.
 - Este repositorio y la API de la demostración son públicos: **los datos reales solo se cargan en local**. La demostración usa datos de práctica.
 
@@ -86,17 +87,18 @@ Lo que la validación automática avisa sobre la base ya cargada (ninguna regla 
 
 `python -m etl.generar_datos_practica` crea un colegio ficticio completo: 135 estudiantes con nombres inventados, 9 grados, 4 cursos por nivel, 3 meses y 7 907 notas, generadas al azar con un comportamiento parecido al real (los trabajos tienen notas más altas que los exámenes; a quien le va mal un mes le suele ir mal el siguiente).
 
-Sirven para mostrar el sistema funcionando sin exponer a ningún estudiante. **No se usan para entrenar ni para validar el modelo**: un modelo entrenado con notas inventadas solo aprendería la fórmula con que se inventaron.
+Sirven para mostrar el sistema funcionando sin exponer a ningún estudiante. **No se usan para entrenar ni para comprobar el modelo**: un modelo entrenado con notas inventadas solo aprendería la fórmula con que se inventaron.
 
 ## 6. Variables y qué se predice
 
-Se predice si el estudiante desaprobará (menos de 11) el examen del periodo siguiente en un curso. Las variables, el método y los resultados están en [modelo-y-validacion.md](modelo-y-validacion.md).
+Se predice si al estudiante le irá mal en un curso. El modelo es una red neuronal entrenada con una base pública; el método y los resultados están en [modelo-y-validacion.md](modelo-y-validacion.md).
 
-| Variable | Situación |
+| Variable | De dónde sale en el sistema |
 |---|---|
-| Notas de examen, cuaderno, libro, oral, prácticas y conducta | En uso |
-| Examen del periodo anterior y su cambio | En uso |
-| Rendimiento del estudiante en sus otros cursos | En uso |
-| Nivel educativo y área del curso | En uso |
-| Inasistencias e incidencias | No disponibles: se llevan en papel. Las tablas ya existen |
+| Nota del curso en el periodo actual y en el anterior | Tabla `notas`: promedio del examen y de los trabajos del periodo |
+| Historial y colegio: edad, inasistencias, cursos desaprobados antes, horas de estudio, apoyo escolar, clases particulares, tiempo de viaje | Tabla `perfiles` |
+| Familia: sexo, tamaño de la familia, padres, estudios y ocupación de los padres, apoderado, apoyo familiar, internet, relación familiar | Tabla `perfiles` |
+| Hábitos: actividades extracurriculares, relación sentimental, tiempo libre, salidas, salud | Tabla `perfiles` |
 | Estado de pago de pensiones | **Retirada**: es un dato sensible y el tutor no puede actuar sobre él |
+
+La asistencia y las incidencias por periodo tienen sus propias tablas, que están vacías: el colegio aún las lleva en papel.

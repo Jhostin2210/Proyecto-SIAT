@@ -61,7 +61,7 @@ def _reglas(cx) -> list:
         ("notas_en_cero", "aviso", en_cero, "Notas en cero: conviene confirmar si son inasistencias a la evaluación."),
         ("identidad_incompleta", "aviso", sin_apellido, "Estudiantes de los que solo se conoce el nombre de pila."),
         ("cursos_sin_examen", "aviso", sin_examen, "Cursos de un estudiante en un periodo sin nota de examen."),
-        ("un_solo_periodo", "aviso", un_periodo, "Estudiantes con un solo periodo: el modelo necesita al menos dos seguidos."),
+        ("un_solo_periodo", "aviso", un_periodo, "Estudiantes con un solo periodo: no hay periodo anterior con que comparar."),
     ]
 
 

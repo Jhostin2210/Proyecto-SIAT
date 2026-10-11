@@ -8,16 +8,18 @@ Prototipo del sistema de alerta temprana del bajo rendimiento académico para la
 
 ## Estado
 
-El sistema carga la base de notas del colegio, valida los datos cada noche y calcula el nivel de riesgo de cada estudiante con un modelo de Machine Learning entrenado y validado con datos reales.
+El sistema carga la base de notas del colegio, valida los datos cada noche y calcula el nivel de riesgo de cada estudiante con una red neuronal.
 
 | Qué | Estado |
 |---|---|
-| Base de datos (12 tablas) y carga de la base consolidada de notas | Construidas y probadas con los datos reales, en local: 3 878 notas de 173 estudiantes |
+| Base de datos (13 tablas) y carga de la base consolidada de notas | Construidas y probadas con los datos reales, en local: 3 878 notas de 173 estudiantes |
 | Validación automática de los datos (10 reglas) | Construida; se ejecuta cada noche |
-| Modelo de riesgo | **Entrenado y validado con datos reales** (519 casos de 146 estudiantes). Resultados y límites en [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md) |
-| Pantallas (inicio, estudiantes, ficha, riesgos y simulador) | Funcionan con los datos de la base y con el modelo |
+| Modelo de riesgo | **Red neuronal** entrenada y probada con una base pública, y aplicada después a los datos del colegio. Resultados y límites en [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md) |
+| Página | Inicio con indicadores, aulas, estudiantes, ficha con informe y acciones, evaluación de un caso y vista del modelo |
+| Reporte del estudiante en PDF y exportación por aula | Construidos |
+| Comunicado al apoderado | El sistema lo redacta y abre WhatsApp; el tutor lo revisa y lo envía. Solo en riesgo alto |
 | Datos de la demostración pública | **De práctica**: 135 estudiantes ficticios con la misma estructura que la base real. Los datos reales no se publican sin el consentimiento de los apoderados |
-| Alertas por correo, usuarios y roles | Pendientes (Sprint 4) |
+| Alertas por correo, registro de seguimiento, usuarios y roles | Pendientes (Sprint 4) |
 
 `GET /api/estado` informa en todo momento qué datos se muestran y de dónde sale el nivel de riesgo.
 
@@ -25,46 +27,43 @@ Más detalle en [docs/arquitectura.md](docs/arquitectura.md), [docs/datos-y-vari
 
 ## El modelo, en corto
 
-Predice si un estudiante desaprobará (menos de 11) el examen del periodo siguiente en un curso, con sus notas del periodo actual. Se validó con validación cruzada agrupada por estudiante, repetida 10 veces, y se comparó con una regla simple y una regresión logística.
+Una red neuronal (35-32-16-8-1, ReLU, Adam) que estima, para cada curso, la probabilidad de que al estudiante le vaya mal. Se entrena con la base pública *Student Performance* (UCI; 1 044 registros de secundaria de Portugal, con notas de 0 a 20) y usa 25 variables: las notas de los dos periodos anteriores, inasistencias, historial, familia y hábitos.
 
-| Modelo | Precisión media | AUC | Detecta | Aciertos de sus alertas |
+| Dónde se mide | Exactitud | AUC | Detecta | Aciertos de sus alertas |
 |---|---|---|---|---|
-| Regla simple | 0,27 | 0,71 | 76 % | 16 % |
-| Regresión logística | 0,38 | 0,74 | 76 % | 19 % |
-| **Bosque aleatorio (en uso)** | **0,40** | **0,75** | 75 % | 20 % |
+| Prueba con 209 registros de la base pública que la red no vio | 83,7 % | 0,95 | 87 % | 59 % |
 
-Supera a las referencias por un margen moderado. Detecta a tres de cada cuatro estudiantes que desaprobarán, pero de cada cinco alertas una acierta: sirve para ordenar a quién mirar primero, no para afirmar quién va a desaprobar. Los datos son pocos (64 casos desaprobados) y la validación debe repetirse con más.
-
-### Modelo de referencia con una base pública
-
-El mismo método, con la base pública *Student Performance* (UCI; 1 044 registros de secundaria de Portugal, con notas de periodo, inasistencias e historial), llega a 92 % de exactitud y un AUC de 0,97. Ese modelo, probado con los resultados reales del colegio, baja a un AUC de 0,71 y detecta a 30 % de los que desaprueban: no supera al modelo local, así que no se usa para calcular el riesgo. Queda como referencia de lo que se lograría con datos completos. Detalle en [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md).
+El archivo ya entrenado se aplica a los datos del colegio, que no participan del entrenamiento.
 
 ## Niveles de riesgo
 
-Tres niveles, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo). Los cortes se fijaron con predicciones sobre datos que el modelo no vio:
+Tres niveles, como define el alcance del proyecto: bajo (verde), medio (amarillo) y alto (rojo). La probabilidad de la red se divide con dos cortes, que en un estudiante típico equivalen a estas notas:
 
-| Nivel | Probabilidad | Qué pasó en la validación |
-|---|---|---|
-| Riesgo alto | 0,57 o más | Desaprobó 50 % (25 de 50 casos) |
-| Riesgo medio | de 0,25 a 0,57 | Desaprobó 13 % (23 de 176) |
-| Riesgo bajo | menos de 0,25 | Desaprobó 5 % (16 de 293) |
+| Nivel | Probabilidad | Nota equivalente | Qué pasó en el colegio en el periodo siguiente |
+|---|---|---|---|
+| Riesgo alto | 0,69 o más | menor de 10 | Le fue mal a 55 % (11 de 20 casos) |
+| Riesgo medio | de 0,05 a 0,69 | de 10 a 14 | Le fue mal a 14 % (23 de 159) |
+| Riesgo bajo | menos de 0,05 | de 15 a 20 | Le fue mal a 3 % (10 de 379) |
 
-El riesgo de un estudiante es el promedio de sus cursos; con un curso en riesgo alto queda como mínimo en riesgo medio.
+El riesgo general de un estudiante junta sus cursos: basta un curso en riesgo alto para que quede en riesgo alto. El nivel alto es una alerta razonable; el nivel medio acierta poco y sirve como lista de seguimiento. Es una estimación de apoyo para el tutor: no reemplaza el criterio del docente.
 
 ## Estructura
 
 | Carpeta | Contenido |
 |---|---|
-| `src/` | Página web (Vite + React + Tailwind). Es la que está publicada. |
+| `src/` | Página web (Vite + React + Tailwind). `App.tsx` es la estructura; cada pantalla está en `src/vistas/`. |
 | `backend/backend_api.py` | API (FastAPI). |
 | `backend/etl/modelo_datos.py` | Definición de las tablas. |
 | `backend/etl/leer_consolidado.py`, `cargar_notas.py` | Lectura de la base consolidada, asignación de códigos y carga. |
 | `backend/etl/validar_datos.py` | Reglas de calidad de los datos. |
-| `backend/etl/variables.py` | Variables del modelo, a partir de las notas. |
-| `backend/ml/entrenar_modelo.py` | Entrenamiento y validación del modelo. |
-| `backend/ml/modelo_referencia.py`, `backend/data/publica/` | Modelo de referencia con una base pública y su prueba en el colegio. |
-| `backend/etl/riesgo.py` | Nivel de riesgo de cada estudiante, con el modelo. |
-| `backend/models/modelo_riesgo.joblib`, `backend/data/metrics_report.json` | Modelo entrenado y reporte de su validación. |
+| `backend/etl/variables.py`, `perfil.py` | Entradas del modelo: nota por curso y perfil del estudiante. |
+| `backend/ml/entrenar_red_neuronal.py` | Entrenamiento y prueba de la red neuronal. |
+| `backend/ml/comprobar_en_colegio.py` | Aplica la red a los datos reales y compara con lo que pasó después. |
+| `backend/etl/riesgo.py`, `informe.py` | Nivel de riesgo por curso y general, patrones, acciones y comunicado. |
+| `backend/etl/reporte_pdf.py` | Reporte del estudiante en PDF. |
+| `backend/models/red_neuronal_riesgo.joblib` | La red entrenada, con su escalador y sus cortes. |
+| `backend/data/red_neuronal_report.json`, `aplicacion_colegio.json` | Resultados del entrenamiento y de la comprobación. |
+| `backend/data/publica/` | Base pública de entrenamiento, con su fuente y licencia. |
 | `backend/etl/generar_datos_practica.py`, `backend/data/notas_practica.csv` | Datos de práctica de la demostración. |
 | `backend/database/schema.sql` | El mismo esquema en SQL de PostgreSQL. |
 | `.github/workflows/` | Validación nocturna de los datos. |
@@ -103,10 +102,12 @@ VITE_API_URL=http://localhost:8000
 Desde `backend`, con el entorno activo:
 
 ```powershell
+python -m ml.entrenar_red_neuronal                            # entrena y prueba la red con la base pública
+
 $env:SQLITE_PATH = "data/privado/sia_t_reales.db"            # base local con los datos reales; no se sube
 python -m etl.cargar_notas "ruta\a\la base consolidada.xlsx"  # carga y calcula el nivel de riesgo
 python -m etl.validar_datos                                   # reglas de calidad
-python -m ml.entrenar_modelo                                  # entrena y valida el modelo (unos 10 minutos)
+python -m ml.comprobar_en_colegio                             # compara los niveles con lo que pasó después
 python -m etl.generar_datos_practica                          # vuelve a crear los datos de práctica
 ```
 
@@ -117,20 +118,23 @@ Sin `SQLITE_PATH` se usa `sia_t_local.db`. Para PostgreSQL, las variables descri
 | Método y ruta | Qué hace |
 |---|---|
 | `GET /api/estado` | Qué datos hay, periodos y origen del nivel de riesgo |
-| `GET /api/estudiantes` | Estudiantes con promedios, nivel de riesgo, probabilidad y motivo |
-| `GET /api/estudiantes/{codigo}` | Ficha: notas por curso y periodo |
-| `GET /api/cargas` | Bitácora de cargas |
-| `GET /api/calidad` | Última validación de los datos |
-| `POST /api/calidad/ejecutar` | Ejecuta la validación |
+| `GET /api/estudiantes` | Estudiantes con su nivel de riesgo general, de mayor a menor |
+| `GET /api/estudiantes/{codigo}` | Ficha: informe, cursos, historial y perfil |
+| `GET /api/estudiantes/{codigo}/reporte.pdf` | Reporte del estudiante en PDF |
+| `GET /api/aulas` | Resumen por aula |
+| `POST /api/aulas/evaluar` | Vuelve a evaluar con el modelo a un aula o a todas |
+| `GET /api/aulas/exportar.csv` | Exporta el resultado de un aula o de todas |
+| `GET /api/formulario` y `POST /api/evaluar` | Evalúa un caso con el modelo, sin guardar nada |
+| `GET /api/modelo` | Cómo se entrenó y probó el modelo, y su aplicación en el colegio |
+| `GET /api/cargas`, `GET /api/calidad`, `POST /api/calidad/ejecutar` | Bitácora de cargas y validación de los datos |
 | `GET /api/exportar-csv` | Exporta las notas por código |
-| `POST /api/predecir` | Simulador: estima el riesgo de un caso con el modelo |
-| `GET /api/reporte-metricas` | Reporte de la validación del modelo |
-| `GET /api/reporte-referencia` | Modelo de referencia con la base pública |
 
 ## Cuidado con los datos
 
-El repositorio y la API son públicos. No subas listas de alumnos, notas reales, DNI, correos ni archivos `.env`.
+El repositorio y la API son públicos. No subas listas de alumnos, notas reales, DNI, teléfonos, correos ni archivos `.env`.
 
-- Cada estudiante se identifica por un código único. La base guarda nombres, un apellido y grado; nunca DNI, fecha de nacimiento ni datos de los apoderados.
+- Cada estudiante se identifica por un código único. La base guarda nombres, un apellido, grado y el perfil que usa el modelo; nunca DNI ni teléfonos.
+- El perfil incluye datos de la familia y de salud, que son datos sensibles: cargarlos del colegio requiere el consentimiento de los apoderados.
 - Los datos reales y la relación entre nombres y códigos viven solo en `backend/data/privado/`, que git ignora.
-- La demostración pública usa datos de práctica. El modelo publicado se entrenó con datos reales, pero el archivo contiene los árboles del modelo, no las notas.
+- La demostración pública usa datos de práctica. Del colegio solo se publican cifras agregadas.
+- El número de WhatsApp del apoderado se escribe al momento de enviar y no se guarda.

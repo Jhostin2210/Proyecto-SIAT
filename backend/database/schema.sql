@@ -1,8 +1,8 @@
 -- ==========================================
--- SIA-T: esquema de la base de datos (versión 3) - PostgreSQL
+-- SIA-T: esquema de la base de datos (versión 4) - PostgreSQL
 -- Generado desde backend/etl/modelo_datos.py, que es la definición vigente.
 -- Cada estudiante tiene un código único. La base no guarda DNI, fecha de nacimiento,
--- dirección ni datos de los apoderados.
+-- dirección ni teléfonos.
 -- ==========================================
 
 CREATE TABLE calidad_datos (
@@ -127,6 +127,40 @@ CREATE TABLE notas (
 	FOREIGN KEY(curso_id) REFERENCES cursos (id) ON DELETE CASCADE, 
 	FOREIGN KEY(periodo_id) REFERENCES periodos (id) ON DELETE CASCADE, 
 	FOREIGN KEY(carga_id) REFERENCES cargas (id)
+);
+
+CREATE TABLE perfiles (
+	id SERIAL NOT NULL, 
+	estudiante_id INTEGER NOT NULL, 
+	sexo VARCHAR(1), 
+	edad INTEGER, 
+	tam_familia VARCHAR(3), 
+	padres_juntos VARCHAR(1), 
+	educ_madre INTEGER, 
+	educ_padre INTEGER, 
+	ocup_madre VARCHAR(10), 
+	ocup_padre VARCHAR(10), 
+	apoderado VARCHAR(10), 
+	tiempo_viaje INTEGER, 
+	horas_estudio INTEGER, 
+	cursos_desaprobados INTEGER, 
+	apoyo_escolar VARCHAR(3), 
+	apoyo_familiar VARCHAR(3), 
+	clases_pagadas VARCHAR(3), 
+	actividades VARCHAR(3), 
+	internet VARCHAR(3), 
+	pareja VARCHAR(3), 
+	relacion_familiar INTEGER, 
+	tiempo_libre INTEGER, 
+	salidas INTEGER, 
+	salud INTEGER, 
+	inasistencias INTEGER, 
+	origen VARCHAR(10) NOT NULL, 
+	actualizado TIMESTAMP WITHOUT TIME ZONE DEFAULT now(), 
+	PRIMARY KEY (id), 
+	CONSTRAINT chk_origen_perfil CHECK (origen IN ('colegio', 'generado')), 
+	UNIQUE (estudiante_id), 
+	FOREIGN KEY(estudiante_id) REFERENCES estudiantes (id) ON DELETE CASCADE
 );
 
 CREATE TABLE predicciones (

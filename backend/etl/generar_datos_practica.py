@@ -29,6 +29,7 @@ CURSOS = {
 # Diferencia típica de cada tipo de nota respecto del nivel del estudiante, y cuánto varía.
 COMPONENTES = {"cuaderno": (0.6, 1.4), "libro": (0.4, 1.5), "oral": (0.0, 1.8), "practica": (-0.6, 2.2), "examen": (-0.4, 3.0), "conducta": (1.2, 1.2)}
 NOMBRES = ["Camila", "Mateo", "Valentina", "Thiago", "Luciana", "Liam", "Mía", "Gael", "Ariana", "Dylan", "Zoe", "Ian", "Antonella", "Adrián", "Fabiana", "Joaquín", "Renata", "Sebastián", "Daniela", "Rodrigo", "Alessia", "Nicolás", "Brianna", "Emilio", "Samantha", "Bruno", "Kiara", "Leonardo", "Abigail", "Santiago", "Paula", "Marcelo", "Ximena", "Álvaro", "Micaela", "Iker", "Alondra", "Franco", "Nahia", "Piero"]
+NOMBRES_FEMENINOS = {"Camila", "Valentina", "Luciana", "Mía", "Ariana", "Zoe", "Antonella", "Fabiana", "Renata", "Daniela", "Alessia", "Brianna", "Samantha", "Kiara", "Abigail", "Paula", "Ximena", "Micaela", "Alondra", "Nahia"}
 APELLIDOS = ["Quispe", "Flores", "Rojas", "Huamán", "Mamani", "Torres", "Vargas", "Ramos", "Castillo", "Chávez", "Mendoza", "Salazar", "Espinoza", "Paredes", "Cárdenas", "Aguilar", "Medina", "Palomino", "Yupanqui", "Villanueva", "Cabrera", "Poma", "Reyes", "Ccori", "Delgado", "Ñahui", "Campos", "Tello", "Gutarra", "Lozano"]
 
 
