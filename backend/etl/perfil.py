@@ -112,7 +112,7 @@ def completar_perfiles(engine, semilla: int = 2026) -> int:
         return 0
     publica = leer_base_publica()
     elegidos = publica.iloc[np.random.RandomState(semilla).randint(0, len(publica), size=len(pendientes))]
-    ahora, filas = ahora(), []
+    momento, filas = ahora(), []
     for (est_id, nombres, nivel, grado), (_, origen) in zip(pendientes, elegidos.iterrows()):
         fila = {columna: (origen[publica_col].item() if hasattr(origen[publica_col], "item") else origen[publica_col]) for columna, publica_col in COLUMNAS.items()}
         fila["edad"] = edad_por_grado(grado, nivel)
@@ -121,7 +121,7 @@ def completar_perfiles(engine, semilla: int = 2026) -> int:
             fila["sexo"] = "F" if primer_nombre in NOMBRES_FEMENINOS else "M"
         if nivel != "secundaria":
             fila["pareja"] = "no"
-        filas.append({**fila, "estudiante_id": est_id, "origen": "generado", "actualizado": ahora})
+        filas.append({**fila, "estudiante_id": est_id, "origen": "generado", "actualizado": momento})
     with engine.begin() as cx:
         cx.execute(insert(perfiles), filas)
     return len(filas)

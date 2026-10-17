@@ -90,10 +90,10 @@ def calcular_riesgo(engine) -> dict:
     with engine.begin() as cx:
         ids_periodo = {codigo: pid for pid, codigo in cx.execute(select(periodos.c.id, periodos.c.codigo))}
         cx.execute(delete(predicciones))
-        ahora = ahora()
+        momento = ahora()
         cx.execute(
             insert(predicciones),
-            [{"estudiante_id": est, "periodo_id": ids_periodo[i["periodo"]], "nivel_riesgo": i["nivel"], "probabilidad": i["probabilidad"], "origen": origen["origen"], "version": origen["version"], "motivo": i["resumen"], "fecha": ahora} for est, i in por_estudiante.items()],
+            [{"estudiante_id": est, "periodo_id": ids_periodo[i["periodo"]], "nivel_riesgo": i["nivel"], "probabilidad": i["probabilidad"], "origen": origen["origen"], "version": origen["version"], "motivo": i["resumen"], "fecha": momento} for est, i in por_estudiante.items()],
         )
     niveles = {n: sum(1 for i in por_estudiante.values() if i["nivel"] == n) for n in (BAJO, MEDIO, ALTO)}
     return {"origen": origen["origen"], "version": origen["version"], "estudiantes": len(por_estudiante), "niveles": niveles}
