@@ -6,7 +6,6 @@ las acciones recomendadas. Se genera en memoria y se descarga desde la ficha del
 """
 
 import io
-from datetime import datetime
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -14,6 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from etl.hora import ahora
 
 TINTA, GRIS, LINEA = colors.HexColor("#0f172a"), colors.HexColor("#64748b"), colors.HexColor("#e2e8f0")
 COLOR_NIVEL = {"Riesgo alto": colors.HexColor("#b91c1c"), "Riesgo medio": colors.HexColor("#b45309"), "Riesgo bajo": colors.HexColor("#047857")}
@@ -49,7 +49,7 @@ def reporte_estudiante(est: dict, informe: dict, modelo: str, de_practica: bool)
     h = []
 
     encabezado = Table(
-        [[Paragraph("SIA-T", E["marca"]), Paragraph(f"Reporte del estudiante<br/>{datetime.now():%d/%m/%Y %H:%M}", E["der"])], [Paragraph("Sistema Inteligente de Alerta Temprana · I.E.P. Peruano Francés", E["sub"]), ""]],
+        [[Paragraph("SIA-T", E["marca"]), Paragraph(f"Reporte del estudiante<br/>{ahora():%d/%m/%Y %H:%M}", E["der"])], [Paragraph("Sistema Inteligente de Alerta Temprana · I.E.P. Peruano Francés", E["sub"]), ""]],
         colWidths=[ancho * 0.65, ancho * 0.35],
     )
     encabezado.setStyle(TableStyle([("SPAN", (1, 0), (1, 1)), ("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 1), ("TOPPADDING", (0, 0), (-1, -1), 1)]))

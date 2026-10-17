@@ -30,7 +30,6 @@ import json
 import os
 import sys
 import warnings
-from datetime import datetime
 
 import joblib
 import numpy as np
@@ -47,6 +46,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from etl.perfil import leer_base_publica
+from etl.hora import ahora
 
 warnings.filterwarnings("ignore")
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -153,14 +153,14 @@ def main():
     curva = [{"nota": n, "probabilidad": round(probabilidad_tipica(modelo, contexto, n), 3)} for n in range(5, 21)]
     print(f"\nNiveles: alto desde {corte_alto:.3f} (nota menor de 10) | medio desde {corte_medio:.3f} (nota de 10 a 14) | bajo por debajo")
 
-    version = f"red_neuronal_{datetime.now():%Y%m%d}"
+    version = f"red_neuronal_{ahora():%Y%m%d}"
     os.makedirs(os.path.dirname(RUTA_MODELO), exist_ok=True)
     joblib.dump(
         {"pipeline": modelo, "variables": VARIABLES, "numericas": NUMERICAS, "categoricas": CATEGORICAS, "aprobatoria": APROBATORIA, "umbrales": {"medio": corte_medio, "alto": corte_alto}, "version": version, "sklearn": sklearn.__version__},
         RUTA_MODELO,
     )
     reporte = {
-        "fecha_entrenamiento": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "fecha_entrenamiento": ahora().strftime("%Y-%m-%d %H:%M"),
         "version": version,
         "nombre": "Red neuronal",
         "base": {"nombre": "Student Performance", "autores": "P. Cortez y A. Silva (2008)", "origen": "Repositorio UCI de Machine Learning", "enlace": "https://archive.ics.uci.edu/dataset/320/student+performance", "descripcion": "Estudiantes de secundaria de dos colegios de Portugal, en Matemática y Lenguaje, con notas de 0 a 20.", "registros": int(len(datos)), "estudiantes": int(datos.est.nunique()), "con_mal_resultado": int(y.sum())},

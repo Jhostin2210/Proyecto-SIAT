@@ -9,7 +9,6 @@ Si no existe el archivo del modelo, se usa una regla por nota y queda rotulado c
 """
 
 import os
-from datetime import datetime
 
 import joblib
 import pandas as pd
@@ -19,6 +18,7 @@ from etl.informe import ALTO, BAJO, MEDIO, armar_informe, nivel_de
 from etl.modelo_datos import crear_tablas, periodos, predicciones
 from etl.perfil import completar_perfiles, leer_perfiles
 from etl.variables import entradas_del_modelo, leer_notas, rendimiento_por_curso
+from etl.hora import ahora
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUTA_MODELO = os.path.join(BASE, "models", "red_neuronal_riesgo.joblib")
@@ -90,7 +90,7 @@ def calcular_riesgo(engine) -> dict:
     with engine.begin() as cx:
         ids_periodo = {codigo: pid for pid, codigo in cx.execute(select(periodos.c.id, periodos.c.codigo))}
         cx.execute(delete(predicciones))
-        ahora = datetime.now()
+        ahora = ahora()
         cx.execute(
             insert(predicciones),
             [{"estudiante_id": est, "periodo_id": ids_periodo[i["periodo"]], "nivel_riesgo": i["nivel"], "probabilidad": i["probabilidad"], "origen": origen["origen"], "version": origen["version"], "motivo": i["resumen"], "fecha": ahora} for est, i in por_estudiante.items()],

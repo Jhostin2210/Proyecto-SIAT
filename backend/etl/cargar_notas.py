@@ -18,7 +18,6 @@ import os
 import random
 import sys
 from collections import Counter
-from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -27,6 +26,7 @@ from sqlalchemy import func, insert, select, update
 from etl.database import engine as engine_por_defecto
 from etl.modelo_datos import cargas, crear_tablas, cursos, estudiantes, matriculas, notas, periodos
 from etl.riesgo import calcular_riesgo
+from etl.hora import ahora
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUTA_CLAVES = os.path.join(BASE, "data", "privado", "claves.csv")
@@ -67,7 +67,7 @@ def cargar(registros, fichas, archivo, tipo_datos, filas_origen, rechazadas=0, e
     crear_tablas(engine)
     with engine.begin() as cx:
         carga_id = cx.execute(
-            insert(cargas).values(fecha=datetime.now(), archivo=os.path.basename(archivo), tipo_datos=tipo_datos, filas_origen=filas_origen, notas_leidas=len(registros), notas_cargadas=0, notas_repetidas=0, notas_rechazadas=rechazadas)
+            insert(cargas).values(fecha=ahora(), archivo=os.path.basename(archivo), tipo_datos=tipo_datos, filas_origen=filas_origen, notas_leidas=len(registros), notas_cargadas=0, notas_repetidas=0, notas_rechazadas=rechazadas)
         ).inserted_primary_key[0]
 
         def catalogo(tabla, columna):

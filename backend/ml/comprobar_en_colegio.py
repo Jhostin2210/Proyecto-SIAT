@@ -16,7 +16,6 @@ Salida: data/aplicacion_colegio.json, con cifras agregadas y sin datos de ningú
 import json
 import os
 import sys
-from datetime import datetime
 
 from sklearn.metrics import roc_auc_score
 
@@ -27,6 +26,7 @@ from etl.informe import ALTO, BAJO, MEDIO
 from etl.modelo_datos import cargas
 from etl.riesgo import calcular_riesgo, evaluar_cursos
 from etl.variables import NOTA_APROBATORIA
+from etl.hora import ahora
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUTA = os.path.join(BASE, "data", "aplicacion_colegio.json")
@@ -58,7 +58,7 @@ def main():
         g = d[d["nivel"] == nivel]
         niveles[clave] = {"casos": int(len(g)), "les_fue_mal": int(g["mal"].sum())}
     reporte = {
-        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "fecha": ahora().strftime("%Y-%m-%d %H:%M"),
         "version_modelo": origen["version"],
         "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con la nota del curso en el periodo siguiente.",
         "casos": int(len(d)),

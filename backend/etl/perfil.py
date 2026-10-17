@@ -10,7 +10,6 @@ de la base pública con que se entrenó el modelo. Los valores se guardan con lo
 
 import os
 import re
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -18,6 +17,7 @@ from sqlalchemy import func, insert, select
 
 from etl.generar_datos_practica import NOMBRES, NOMBRES_FEMENINOS
 from etl.modelo_datos import estudiantes, matriculas, perfiles
+from etl.hora import ahora
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CARPETA_PUBLICA = os.path.join(BASE, "data", "publica")
@@ -112,7 +112,7 @@ def completar_perfiles(engine, semilla: int = 2026) -> int:
         return 0
     publica = leer_base_publica()
     elegidos = publica.iloc[np.random.RandomState(semilla).randint(0, len(publica), size=len(pendientes))]
-    ahora, filas = datetime.now(), []
+    ahora, filas = ahora(), []
     for (est_id, nombres, nivel, grado), (_, origen) in zip(pendientes, elegidos.iterrows()):
         fila = {columna: (origen[publica_col].item() if hasattr(origen[publica_col], "item") else origen[publica_col]) for columna, publica_col in COLUMNAS.items()}
         fila["edad"] = edad_por_grado(grado, nivel)

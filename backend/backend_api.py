@@ -12,7 +12,6 @@ import json
 import os
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime
 from typing import Optional
 
 import pandas as pd
@@ -31,6 +30,7 @@ from etl.reporte_pdf import reporte_estudiante
 from etl.riesgo import calcular_riesgo, cargar_modelo, evaluar_cursos, informes
 from etl.validar_datos import REGLAS_CRITICAS, validar
 from etl.variables import NOTA_APROBATORIA
+from etl.hora import ahora
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RUTA_REPORTE = os.path.join(BASE_DIR, "data", "red_neuronal_report.json")
@@ -146,7 +146,7 @@ def _orden_grado(grado: str) -> tuple:
 # ───────────────────────── Estado ─────────────────────────
 @app.get("/")
 def raiz():
-    return {"app": "SIA-T - Sistema Inteligente de Alerta Temprana", "estado": "Servidor funcionando", "version": app.version, "fecha_servidor": datetime.now().isoformat(), "documentacion": "/docs"}
+    return {"app": "SIA-T - Sistema Inteligente de Alerta Temprana", "estado": "Servidor funcionando", "version": app.version, "fecha_servidor": ahora().isoformat(), "documentacion": "/docs"}
 
 
 @app.get("/api/estado", summary="Qué datos se muestran y de dónde sale el nivel de riesgo")
@@ -230,7 +230,7 @@ def reporte_pdf(codigo: str):
     with engine.connect() as cx:
         ultima = cx.execute(select(cargas.c.tipo_datos).order_by(cargas.c.id.desc())).scalar()
     contenido = reporte_estudiante(est, r["informes"][est["id"]], f"red neuronal {modelo['red']['arquitectura']}" if modelo and r["origen"]["origen"] == "modelo" else "regla por nota", ultima == "practica")
-    return Response(content=contenido, media_type="application/pdf", headers={"Content-Disposition": f'inline; filename="reporte_{codigo}_{datetime.now():%Y%m%d}.pdf"'})
+    return Response(content=contenido, media_type="application/pdf", headers={"Content-Disposition": f'inline; filename="reporte_{codigo}_{ahora():%Y%m%d}.pdf"'})
 
 
 def _aulas(lista) -> list:
@@ -256,7 +256,7 @@ def evaluar_aula(grado: Optional[str] = None):
     lista = _resultados()["estudiantes"]
     if grado:
         lista = [e for e in lista if e["grado"] == grado]
-    return {"grado": grado, "evaluados": len(lista), "niveles": _conteo(lista), "origen": resumen.get("origen"), "version": resumen.get("version"), "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "milisegundos": round((time.perf_counter() - inicio) * 1000), "estudiantes": lista}
+    return {"grado": grado, "evaluados": len(lista), "niveles": _conteo(lista), "origen": resumen.get("origen"), "version": resumen.get("version"), "fecha": ahora().strftime("%Y-%m-%d %H:%M:%S"), "milisegundos": round((time.perf_counter() - inicio) * 1000), "estudiantes": lista}
 
 
 @app.get("/api/aulas/exportar.csv", summary="Exporta el resultado de un aula, o de todas")

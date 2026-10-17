@@ -14,7 +14,6 @@ código 1 si alguna regla crítica falla. Una tarea programada lo ejecuta cada n
 import argparse
 import os
 import sys
-from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -22,6 +21,7 @@ from sqlalchemy import case, func, insert, select
 
 from etl.database import engine as engine_por_defecto
 from etl.modelo_datos import calidad_datos, cargas, crear_tablas, cursos, estudiantes, matriculas, notas, periodos
+from etl.hora import ahora
 
 
 # Reglas críticas: si fallan, la validación nocturna queda en rojo. Las demás son avisos.
@@ -72,7 +72,7 @@ def _reglas(cx) -> list:
 def validar(engine=engine_por_defecto) -> dict:
     """Ejecuta las reglas, guarda el resultado y lo devuelve."""
     crear_tablas(engine)
-    momento = datetime.now()
+    momento = ahora()
     with engine.begin() as cx:
         resultados = [
             {"regla": nombre, "severidad": severidad if cantidad else "correcta", "cantidad": int(cantidad or 0), "detalle": descripcion}
