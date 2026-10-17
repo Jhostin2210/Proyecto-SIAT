@@ -1,4 +1,4 @@
-// Datos: evidencia del entregable E-01, módulo de integración y limpieza de datos (paquetes 1.2.1 y 1.2.2; REQ-01 y REQ-02).
+// Datos: pantalla del administrador (encargado de TI). Cargas, reconciliación y calidad de los datos (paquetes 1.2.1 y 1.2.2; REQ-01 y REQ-02).
 import { useState } from "react";
 import { CheckCircle2, Download, ExternalLink, Loader2, ShieldCheck, TriangleAlert } from "lucide-react";
 import { api } from "../api";
@@ -6,18 +6,6 @@ import { Boton, Cargando, Encabezado, ErrorDeCarga, miles, Tarjeta, TituloTarjet
 
 const ACCIONES_GITHUB = "https://github.com/Jhostin2210/Proyecto-SIAT/actions";
 
-// Pruebas del entregable con la base real del colegio (documento docs/pruebas-sprint-2.md del repositorio).
-const CASOS: [string, string, "Aprobado" | "Aprobado en parte" | "En curso", string][] = [
-  ["CP-01", "Se consolidan todos los registros válidos", "Aprobado", "3 878 notas válidas leídas y 3 878 cargadas, de 3 937 filas de 173 estudiantes. Las 59 restantes se reportan con su motivo."],
-  ["CP-02", "No se generan duplicados", "Aprobado", "Segunda carga del mismo archivo: 0 cargadas y 3 878 «ya estaban»."],
-  ["CP-03", "Reconciliación entre el origen y la base en tres fechas", "Aprobado en parte", "La reconciliación es correcta; falta repetirla con cargas sucesivas en tres fechas."],
-  ["CP-04", "Integridad referencial", "Aprobado", "Ninguna nota sin estudiante, curso o periodo; ningún estudiante sin matrícula."],
-  ["CP-05", "La validación corre cada noche 15 días seguidos sin fallas", "En curso", "Una ejecución por noche en GitHub Actions desde el 11/10/2026, sin fallas."],
-  ["CP-06", "Detecta duplicados", "Aprobado", "33 notas repetidas en el origen: la carga conserva la primera y las cuenta."],
-  ["CP-07", "Detecta vacíos críticos", "Aprobado", "7 casillas vacías o con texto y 15 notas sin periodo identificable, detectadas y no cargadas."],
-  ["CP-08", "El resultado queda disponible para el responsable de TI", "Aprobado", "Esta pantalla, la consulta de la API y el reporte de cada ejecución nocturna."],
-];
-const COLOR_CASO = { Aprobado: "border-emerald-200 bg-emerald-50 text-emerald-700", "Aprobado en parte": "border-teal-200 bg-teal-50 text-teal-700", "En curso": "border-sky-200 bg-sky-50 text-sky-700" };
 
 const fecha = (t: string) => {
   const [d, h] = t.split(/[ T]/);
@@ -183,34 +171,6 @@ export default function Datos() {
         </Tarjeta>
       </div>
 
-      <Tarjeta className="mt-5">
-        <TituloTarjeta titulo="Pruebas del entregable E-01" detalle="Casos de prueba CP-01 a CP-08 de la matriz de trazabilidad, ejecutados con la base consolidada de notas del colegio." />
-        <div className="overflow-x-auto pb-2 pt-3">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
-                <th className="px-6 py-2.5 font-medium">Caso</th>
-                <th className="px-3 py-2.5 font-medium">Qué comprueba</th>
-                <th className="px-3 py-2.5 font-medium">Resultado</th>
-                <th className="px-6 py-2.5 font-medium">Evidencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              {CASOS.map(([id, que, resultado, evidencia]) => (
-                <tr key={id} className="border-b border-slate-100 align-top last:border-0">
-                  <td className="whitespace-nowrap px-6 py-3 font-semibold text-slate-900">{id}</td>
-                  <td className="px-3 py-3 text-slate-700">{que}</td>
-                  <td className="px-3 py-3">
-                    <span className={`inline-block whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${COLOR_CASO[resultado]}`}>{resultado}</span>
-                  </td>
-                  <td className="px-6 py-3 text-[13px] leading-5 text-slate-600">{evidencia}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="px-6 pb-5 text-xs leading-5 text-slate-500">Seis casos aprobados, uno aprobado en parte (falta repetir la reconciliación en tres fechas) y uno en curso (las 15 noches seguidas se completan el 25/10/2026).</p>
-      </Tarjeta>
     </>
   );
 }
