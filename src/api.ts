@@ -136,7 +136,26 @@ export interface Calidad {
   ejecuciones?: number;
   criticas?: number;
   avisos?: number;
-  reglas?: { regla: string; severidad: string; cantidad: number; detalle: string }[];
+  reglas?: { regla: string; severidad: string; cantidad: number; detalle: string; tipo: "critica" | "aviso" }[];
+}
+
+export interface Carga {
+  id: number;
+  fecha: string;
+  archivo: string;
+  tipo_datos: "practica" | "reales";
+  filas_origen: number;
+  notas_leidas: number;
+  notas_cargadas: number;
+  notas_repetidas: number;
+  notas_rechazadas: number;
+}
+
+export interface Ejecucion {
+  fecha: string;
+  criticas: number;
+  avisos: number;
+  correctas: number;
 }
 
 async function pedir<T>(ruta: string, opciones?: RequestInit): Promise<T> {
@@ -165,6 +184,10 @@ export const api = {
     ),
   modelo: () => pedir<Modelo>("/api/modelo"),
   calidad: () => pedir<Calidad>("/api/calidad"),
+  cargas: () => pedir<Carga[]>("/api/cargas"),
+  historialCalidad: () => pedir<Ejecucion[]>("/api/calidad/historial"),
+  ejecutarValidacion: () => pedir<{ criticas: number; avisos: number; fecha: string }>("/api/calidad/ejecutar", { method: "POST" }),
+  urlExportarNotas: () => `${API_URL}/api/exportar-csv`,
   formulario: () => pedir<{ nota_aprobatoria: number; campos: Campo[] }>("/api/formulario"),
   evaluar: (cuerpo: { nota_actual: number; nota_anterior: number | null; perfil: Record<string, string | number> }) =>
     pedir<ResultadoEvaluacion>("/api/evaluar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo) }),

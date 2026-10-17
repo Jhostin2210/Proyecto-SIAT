@@ -24,6 +24,10 @@ from etl.database import engine as engine_por_defecto
 from etl.modelo_datos import calidad_datos, cargas, crear_tablas, cursos, estudiantes, matriculas, notas, periodos
 
 
+# Reglas críticas: si fallan, la validación nocturna queda en rojo. Las demás son avisos.
+REGLAS_CRITICAS = ("base_con_datos", "notas_fuera_de_rango", "notas_duplicadas", "referencias_huerfanas", "estudiantes_sin_matricula")
+
+
 def _reglas(cx) -> list:
     """Cada regla devuelve (nombre, severidad si falla, cantidad, descripción)."""
     contar = lambda consulta: cx.execute(consulta).scalar() or 0

@@ -1,6 +1,6 @@
 // SIA-T: estructura de la página (menú, rótulo de datos y vistas).
 import { useEffect, useState } from "react";
-import { BrainCircuit, ClipboardPen, LayoutDashboard, Menu, School, Users, X } from "lucide-react";
+import { BrainCircuit, ClipboardPen, Database, LayoutDashboard, Menu, School, Users, X } from "lucide-react";
 import { api, type Estado } from "./api";
 import { ir, useDatos } from "./ui";
 import Inicio from "./vistas/Inicio";
@@ -9,6 +9,7 @@ import Estudiantes from "./vistas/Estudiantes";
 import Ficha from "./vistas/Ficha";
 import Evaluar from "./vistas/Evaluar";
 import Modelo from "./vistas/Modelo";
+import Datos from "./vistas/Datos";
 
 function useRuta(): string[] {
   const leer = () => window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
@@ -27,6 +28,7 @@ const MENU = [
   { clave: "estudiantes", texto: "Estudiantes", icono: Users },
   { clave: "evaluar", texto: "Evaluar estudiante", icono: ClipboardPen },
   { clave: "modelo", texto: "Modelo", icono: BrainCircuit },
+  { clave: "datos", texto: "Datos", icono: Database },
 ];
 
 function Rotulo({ estado }: { estado: Estado | null }) {
@@ -46,6 +48,7 @@ export default function App() {
     if (seccion === "estudiantes") return ruta[1] ? <Ficha codigo={ruta[1]} /> : <Estudiantes />;
     if (seccion === "evaluar") return <Evaluar />;
     if (seccion === "modelo") return <Modelo />;
+    if (seccion === "datos") return <Datos />;
     return <Inicio estado={estado} />;
   };
 

@@ -15,7 +15,7 @@ El sistema carga la base de notas del colegio, valida los datos cada noche y cal
 | Base de datos (13 tablas) y carga de la base consolidada de notas | Construidas y probadas con los datos reales, en local: 3 878 notas de 173 estudiantes |
 | Validación automática de los datos (10 reglas) | Construida; se ejecuta cada noche |
 | Modelo de riesgo | **Red neuronal** entrenada y probada con una base pública, y aplicada después a los datos del colegio. Resultados y límites en [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md) |
-| Página | Inicio con indicadores, aulas, estudiantes, ficha con informe y acciones, evaluación de un caso y vista del modelo |
+| Página | Inicio con indicadores, aulas, estudiantes, ficha con informe y acciones, evaluación de un caso, vista del modelo y pantalla «Datos» con la evidencia del entregable E-01 |
 | Reporte del estudiante en PDF y exportación por aula | Construidos |
 | Comunicado al apoderado | El sistema lo redacta y abre WhatsApp; el tutor lo revisa y lo envía. Solo en riesgo alto |
 | Datos de la demostración pública | **De práctica**: 135 estudiantes ficticios con la misma estructura que la base real. Los datos reales no se publican sin el consentimiento de los apoderados |
@@ -126,7 +126,7 @@ Sin `SQLITE_PATH` se usa `sia_t_local.db`. Para PostgreSQL, las variables descri
 | `GET /api/aulas/exportar.csv` | Exporta el resultado de un aula o de todas |
 | `GET /api/formulario` y `POST /api/evaluar` | Evalúa un caso con el modelo, sin guardar nada |
 | `GET /api/modelo` | Cómo se entrenó y probó el modelo, y su aplicación en el colegio |
-| `GET /api/cargas`, `GET /api/calidad`, `POST /api/calidad/ejecutar` | Bitácora de cargas y validación de los datos |
+| `GET /api/cargas`, `GET /api/calidad`, `GET /api/calidad/historial`, `POST /api/calidad/ejecutar` | Bitácora de cargas, validación de los datos e historial de validaciones |
 | `GET /api/exportar-csv` | Exporta las notas por código |
 
 ## Cuidado con los datos

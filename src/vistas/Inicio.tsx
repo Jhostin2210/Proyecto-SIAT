@@ -118,6 +118,9 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
                   {calidad.datos.reglas?.length} reglas revisadas: {calidad.datos.criticas} con fallas críticas y {calidad.datos.avisos} avisos.
                 </p>
               )}
+              <button onClick={() => ir("/datos")} className="mt-3 flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+                Ver cargas, reglas y validaciones <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
         </Tarjeta>

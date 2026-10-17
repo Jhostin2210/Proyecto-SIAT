@@ -22,10 +22,10 @@ python -m etl.validar_datos
 | CP-02 | No se generan duplicados | **Aprobado** | Segunda carga del mismo archivo: 0 cargadas, 3 878 «ya estaban»; regla `notas_duplicadas` correcta |
 | CP-03 | Reconciliación entre el origen y la base en tres fechas | **Aprobado en parte** | La reconciliación es correcta. Falta repetirla en tres fechas con cargas reales sucesivas |
 | CP-04 | Integridad referencial | **Aprobado** | Reglas `referencias_huerfanas` y `estudiantes_sin_matricula` correctas |
-| CP-05 | La validación corre cada noche 15 días seguidos sin fallas | **En curso** | Tarea programada creada; el historial queda en la pestaña Actions del repositorio. Se cumple al completar 15 ejecuciones |
+| CP-05 | La validación corre cada noche 15 días seguidos sin fallas | **En curso** | Una ejecución programada por noche desde el 11/10/2026: 6 seguidas sin fallas al 17/10/2026 (pestaña Actions del repositorio). Se cumple el 25/10/2026 si no hay fallas |
 | CP-06 | Detecta duplicados | **Aprobado** | 33 notas repetidas en el origen: la carga conserva la primera y las cuenta; la validación revisa la base |
 | CP-07 | Detecta vacíos críticos | **Aprobado** | 7 casillas vacías o con texto y 15 notas sin periodo identificable detectadas y no cargadas; 56 notas en cero y 62 cursos sin examen avisados |
-| CP-08 | El resultado queda disponible para el responsable de TI | **Aprobado** | Tabla `calidad_datos`, `GET /api/calidad`, tarjeta «Datos y calidad» de la página y reporte de cada ejecución nocturna |
+| CP-08 | El resultado queda disponible para el responsable de TI | **Aprobado** | Pantalla «Datos» de la página (cargas, reconciliación, reglas e historial), `GET /api/calidad`, `GET /api/calidad/historial` y reporte de cada ejecución nocturna |
 
 La validación tiene diez reglas: cinco críticas (detienen la tarea nocturna) y cinco avisos. Con la base real: ninguna crítica falla y hay cinco avisos, detallados en [datos-y-variables.md](datos-y-variables.md). Con los datos de práctica: ninguna falla y ningún aviso.
 

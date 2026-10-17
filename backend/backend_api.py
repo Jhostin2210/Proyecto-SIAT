@@ -29,7 +29,7 @@ from etl.modelo_datos import NIVELES_RIESGO, calidad_datos, cargas, crear_tablas
 from etl.perfil import COLUMNAS, DESCRIPCION, leer_base_publica, para_el_modelo
 from etl.reporte_pdf import reporte_estudiante
 from etl.riesgo import calcular_riesgo, cargar_modelo, evaluar_cursos, informes
-from etl.validar_datos import validar
+from etl.validar_datos import REGLAS_CRITICAS, validar
 from etl.variables import NOTA_APROBATORIA
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -357,7 +357,7 @@ def ultima_validacion():
         ultima = cx.execute(select(func.max(calidad_datos.c.fecha))).scalar()
         if ultima is None:
             return {"disponible": False, "mensaje": "Todavía no se ha ejecutado la validación."}
-        reglas = [dict(f) for f in cx.execute(select(calidad_datos.c.regla, calidad_datos.c.severidad, calidad_datos.c.cantidad, calidad_datos.c.detalle).where(calidad_datos.c.fecha == ultima)).mappings()]
+        reglas = [{**dict(f), "tipo": "critica" if f["regla"] in REGLAS_CRITICAS else "aviso"} for f in cx.execute(select(calidad_datos.c.regla, calidad_datos.c.severidad, calidad_datos.c.cantidad, calidad_datos.c.detalle).where(calidad_datos.c.fecha == ultima)).mappings()]
         ejecuciones = cx.execute(select(func.count(func.distinct(calidad_datos.c.fecha)))).scalar()
     return {
         "disponible": True,
@@ -367,6 +367,17 @@ def ultima_validacion():
         "avisos": sum(1 for r in reglas if r["severidad"] == "aviso"),
         "reglas": reglas,
     }
+
+
+@app.get("/api/calidad/historial", summary="Ejecuciones de la validación guardadas en esta base, de la más reciente a la más antigua")
+def historial_validaciones(limite: int = 30):
+    with engine.connect() as cx:
+        filas = cx.execute(select(calidad_datos.c.fecha, calidad_datos.c.severidad, func.count()).group_by(calidad_datos.c.fecha, calidad_datos.c.severidad)).all()
+    por_fecha = {}
+    for fecha, severidad, n in filas:
+        fila = por_fecha.setdefault(str(fecha), {"fecha": str(fecha), "criticas": 0, "avisos": 0, "correctas": 0})
+        fila[{"critica": "criticas", "aviso": "avisos"}.get(severidad, "correctas")] += n
+    return sorted(por_fecha.values(), key=lambda f: f["fecha"], reverse=True)[:limite]
 
 
 @app.post("/api/calidad/ejecutar", summary="Ejecuta ahora la validación de los datos")
