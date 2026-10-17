@@ -19,7 +19,7 @@ function Comunicado({ ficha, cerrar }: { ficha: TFicha; cerrar: () => void }) {
   const destino = digitos.length >= 9 ? (digitos.length === 9 ? `51${digitos}` : digitos) : "";
   const enlace = `https://wa.me/${destino}?text=${encodeURIComponent(mensaje)}`;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Comunicado al apoderado">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Comunicado al apoderado">
       <div className="flex max-h-[92vh] w-full max-w-xl flex-col rounded-t-2xl bg-white shadow-xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <div>
@@ -31,7 +31,7 @@ function Comunicado({ ficha, cerrar }: { ficha: TFicha; cerrar: () => void }) {
           </button>
         </div>
         <div className="space-y-4 overflow-y-auto px-6 py-5">
-          <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} rows={13} aria-label="Mensaje" className="w-full resize-y rounded-xl border border-slate-200 p-3 text-sm leading-6 text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+          <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} rows={13} aria-label="Mensaje" className="w-full resize-y rounded-xl border border-slate-200 p-3 text-sm leading-6 text-slate-800 outline-none focus:border-pf-enlace focus:ring-2 focus:ring-pf-suave" />
           <label className="block text-[13px] font-medium text-slate-700">
             Número de WhatsApp del apoderado (opcional)
             <input
@@ -39,7 +39,7 @@ function Comunicado({ ficha, cerrar }: { ficha: TFicha; cerrar: () => void }) {
               onChange={(e) => setNumero(e.target.value)}
               inputMode="tel"
               placeholder="Ej.: 987 654 321"
-              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:border-pf-enlace focus:ring-2 focus:ring-pf-suave"
             />
             <span className="mt-1 block text-xs font-normal text-slate-500">Si lo deja vacío, WhatsApp le pedirá elegir el contacto. El número no se guarda.</span>
           </label>

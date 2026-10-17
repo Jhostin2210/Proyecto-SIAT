@@ -1,6 +1,6 @@
 // SIA-T: estructura de la página (menú, rótulo de datos y vistas).
 import { useEffect, useState } from "react";
-import { BrainCircuit, ClipboardPen, Database, LayoutDashboard, Menu, School, Users, X } from "lucide-react";
+import { BrainCircuit, ClipboardPen, Database, LayoutDashboard, Menu, Moon, School, Sun, Users, X } from "lucide-react";
 import { api, type Estado } from "./api";
 import { ir, useDatos } from "./ui";
 import Inicio from "./vistas/Inicio";
@@ -30,6 +30,38 @@ const MENU = [
   { clave: "modelo", texto: "Modelo", icono: BrainCircuit },
   { clave: "datos", texto: "Datos", icono: Database },
 ];
+
+// Alterna el modo oscuro: clase «dark» en <html> y preferencia guardada en el navegador.
+function BotonTema({ conTexto = false }: { conTexto?: boolean }) {
+  const [oscuro, setOscuro] = useState(() => document.documentElement.classList.contains("dark"));
+  const alternar = () => {
+    const nuevo = !oscuro;
+    document.documentElement.classList.toggle("dark", nuevo);
+    try {
+      localStorage.setItem("tema", nuevo ? "oscuro" : "claro");
+    } catch {
+      /* sin almacenamiento: el cambio dura hasta recargar */
+    }
+    setOscuro(nuevo);
+  };
+  return (
+    <button
+      onClick={alternar}
+      aria-label={oscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      title={oscuro ? "Modo claro" : "Modo oscuro"}
+      className={`inline-flex items-center gap-2 rounded-lg text-slate-300 transition hover:bg-white/10 hover:text-white ${conTexto ? "px-2 py-1.5 text-xs font-medium" : "p-1.5"}`}
+    >
+      {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {conTexto && (oscuro ? "Modo claro" : "Modo oscuro")}
+    </button>
+  );
+}
+
+const Logo = ({ chico = false }: { chico?: boolean }) => (
+  <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-2 ring-pf-acento/70 ${chico ? "h-7 w-7" : "h-10 w-10"}`}>
+    <img src="/logo.jpeg" alt="Insignia del Colegio Peruano Francés" className="h-full w-full object-contain" />
+  </span>
+);
 
 function Rotulo({ estado }: { estado: Estado | null }) {
   if (!estado || estado.base_de_datos.conectada) return null;
@@ -61,9 +93,9 @@ export default function App() {
             key={clave}
             onClick={() => ir(`/${clave}`)}
             aria-current={activo ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${activo ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"}`}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${activo ? "bg-white/10 text-white shadow-[inset_3px_0_0_var(--color-pf-acento)]" : "text-slate-300 hover:bg-white/5 hover:text-white"}`}
           >
-            <Icono className={`h-[18px] w-[18px] ${activo ? "text-sky-300" : "text-slate-400"}`} />
+            <Icono className={`h-[18px] w-[18px] ${activo ? "text-pf-acento-claro" : "text-slate-400"}`} />
             {texto}
           </button>
         );
@@ -73,7 +105,7 @@ export default function App() {
 
   const marca = (
     <div className="flex items-center gap-3 px-5 py-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-sm font-bold text-white">S</div>
+      <Logo />
       <div>
         <p className="text-sm font-semibold leading-4 text-white">SIA-T</p>
         <p className="text-[11px] leading-4 text-slate-400">Alerta temprana</p>
@@ -84,25 +116,32 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 lg:flex">
       {/* Menú lateral en pantallas grandes */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-slate-900 lg:flex">
+      <aside className="isla sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-pf-lateral lg:flex">
+        <div className="h-1 bg-[linear-gradient(90deg,var(--color-pf-acento)_0_33%,#fff_33%_66%,var(--color-pf-acento)_66%)]" />
         {marca}
         {menu}
         <div className="border-t border-white/10 px-5 py-4 text-[11px] leading-4 text-slate-400">
           <p className="font-medium text-slate-300">I.E.P. Peruano Francés</p>
           <p>{estado?.periodo_actual ? `Periodo: ${estado.periodo_actual.nombre}` : "Sin periodo cargado"}</p>
+          <div className="mt-3 -ml-2">
+            <BotonTema conTexto />
+          </div>
         </div>
       </aside>
 
       {/* Barra superior en pantallas pequeñas */}
-      <header className="sticky top-0 z-30 flex items-center justify-between bg-slate-900 px-4 py-3 lg:hidden">
+      <header className="isla sticky top-0 z-30 flex items-center justify-between border-t-4 border-pf-acento bg-pf-lateral px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2 text-sm font-semibold text-white">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 text-xs font-bold">S</span> SIA-T
+          <Logo chico /> SIA-T
         </div>
-        <button onClick={() => setMenuAbierto(!menuAbierto)} aria-label="Abrir el menú" className="rounded-lg p-1.5 text-slate-200 hover:bg-white/10">
+        <div className="flex items-center gap-1">
+          <BotonTema />
+          <button onClick={() => setMenuAbierto(!menuAbierto)} aria-label="Abrir el menú" className="rounded-lg p-1.5 text-slate-200 hover:bg-white/10">
           {menuAbierto ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          </button>
+        </div>
       </header>
-      {menuAbierto && <div className="sticky top-[52px] z-20 bg-slate-900 pb-3 lg:hidden">{menu}</div>}
+      {menuAbierto && <div className="isla sticky top-[56px] z-20 bg-pf-lateral pb-3 lg:hidden">{menu}</div>}
 
       <div className="min-w-0 flex-1">
         <Rotulo estado={estado} />

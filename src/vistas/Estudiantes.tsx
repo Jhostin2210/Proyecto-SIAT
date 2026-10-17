@@ -36,11 +36,11 @@ export default function Estudiantes() {
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por nombre o código"
               aria-label="Buscar estudiante"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-pf-enlace focus:ring-2 focus:ring-pf-suave"
             />
           </label>
           <div className="flex items-center gap-1.5" role="group" aria-label="Filtrar por nivel de riesgo">
-            <button onClick={() => setNivel("")} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${nivel === "" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+            <button onClick={() => setNivel("")} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${nivel === "" ? "bg-pf-boton text-white" : "text-slate-600 hover:bg-slate-100"}`}>
               Todos
             </button>
             {NIVELES.map((n) => (
@@ -54,7 +54,7 @@ export default function Estudiantes() {
               </button>
             ))}
           </div>
-          <select value={grado} onChange={(e) => setGrado(e.target.value)} aria-label="Filtrar por grado" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+          <select value={grado} onChange={(e) => setGrado(e.target.value)} aria-label="Filtrar por grado" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-pf-enlace focus:ring-2 focus:ring-pf-suave">
             <option value="">Todos los grados</option>
             {grados.map((g) => (
               <option key={g} value={g}>
@@ -66,7 +66,7 @@ export default function Estudiantes() {
         <TablaEstudiantes lista={filtrada.slice(0, visibles)} conGrado />
         {filtrada.length > visibles && (
           <div className="border-t border-slate-100 px-6 py-4 text-center">
-            <button onClick={() => setVisibles(visibles + 30)} className="text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+            <button onClick={() => setVisibles(visibles + 30)} className="text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
               Mostrar 30 más ({filtrada.length - visibles} restantes)
             </button>
           </div>

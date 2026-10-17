@@ -11,14 +11,14 @@ const COLUMNAS: [Campo["grupo"], string][] = [
   ["familia", "Familia"],
   ["habitos", "Hábitos"],
 ];
-const entrada = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+const entrada = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-pf-enlace focus:ring-2 focus:ring-pf-suave";
 
 function Pasos({ actual }: { actual: number }) {
   return (
     <ol className="mb-6 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5">
       {PASOS.map((p, i) => (
         <li key={p} className="flex flex-1 items-center gap-2.5 last:flex-none">
-          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${i < actual ? "bg-emerald-500 text-white" : i === actual ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"}`}>
+          <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${i < actual ? "bg-emerald-500 text-white" : i === actual ? "bg-pf-boton text-white" : "bg-slate-100 text-slate-400"}`}>
             {i < actual ? <Check className="h-3.5 w-3.5" /> : i + 1}
           </span>
           <span className={`hidden text-[13px] font-medium sm:inline ${i <= actual ? "text-slate-900" : "text-slate-400"}`}>{p}</span>
@@ -151,7 +151,7 @@ export default function Evaluar() {
             {ETAPAS.map((t, i) => (
               <li key={t} className={`flex items-center gap-3 text-sm ${i <= etapa ? "text-slate-900" : "text-slate-400"}`}>
                 <span className="flex h-6 w-6 items-center justify-center">
-                  {i < etapa ? <Check className="h-4 w-4 text-emerald-600" /> : i === etapa ? <Loader2 className="h-4 w-4 animate-spin text-blue-600" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
+                  {i < etapa ? <Check className="h-4 w-4 text-emerald-600" /> : i === etapa ? <Loader2 className="h-4 w-4 animate-spin text-pf-enlace" /> : <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
                 </span>
                 {t}
               </li>

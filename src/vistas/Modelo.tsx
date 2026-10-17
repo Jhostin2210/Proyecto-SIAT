@@ -28,9 +28,9 @@ function Red({ capas }: { capas: { n: number; nombre: string }[] }) {
       {capas.map((c, i) => (
         <g key={i}>
           {ys(c.n).map((y) => (
-            <circle key={y} cx={x(i)} cy={y} r={5.5} fill={i === 0 ? "#38bdf8" : i === capas.length - 1 ? "#0f172a" : "#2563eb"} />
+            <circle key={y} cx={x(i)} cy={y} r={5.5} className={i === 0 ? "fill-pf-acento" : i === capas.length - 1 ? "fill-slate-900" : "fill-pf-enlace"} />
           ))}
-          <text x={x(i)} y={alto - 22} textAnchor="middle" fontSize={13} fontWeight={600} fill="#0f172a">
+          <text x={x(i)} y={alto - 22} textAnchor="middle" fontSize={13} fontWeight={600} className="fill-slate-900">
             {c.n}
           </text>
           <text x={x(i)} y={alto - 7} textAnchor="middle" fontSize={10} fill="#64748b">
@@ -112,7 +112,7 @@ export default function Modelo() {
             <p className="text-[13px] text-slate-500">
               Se usan {m.variables.length} variables: las notas de los dos periodos anteriores, inasistencias, historial, familia y hábitos. {m.particion.metodo}
             </p>
-            <a href={m.base.enlace} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+            <a href={m.base.enlace} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
               {m.base.origen} <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -173,7 +173,7 @@ export default function Modelo() {
                 <XAxis dataKey="epoca" type="number" domain={[1, "dataMax"]} tickCount={7} allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
                 <Tooltip formatter={(v: number) => [v.toFixed(3).replace(".", ","), "Pérdida"]} labelFormatter={(e) => `Época ${e}`} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Line type="monotone" dataKey="perdida" stroke="#2563eb" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="perdida" stroke="#3a2d93" strokeWidth={2} dot={false} className="grafico-marca" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -193,7 +193,7 @@ export default function Modelo() {
                 <XAxis dataKey="nota" type="number" domain={[5, 20]} ticks={[5, 8, 10, 11, 15, 18, 20]} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} tickLine={false} />
                 <YAxis tickFormatter={(v) => `${Math.round(v * 100)} %`} domain={[0, 1]} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v: number) => [pct(v, 1), "Probabilidad"]} labelFormatter={(n) => `Nota ${n}`} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Area type="monotone" dataKey="probabilidad" stroke="#0f172a" strokeWidth={2} fill="#0f172a" fillOpacity={0.06} />
+                <Area type="monotone" dataKey="probabilidad" stroke="#25196e" strokeWidth={2} fill="#25196e" className="grafico-marca" fillOpacity={0.06} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

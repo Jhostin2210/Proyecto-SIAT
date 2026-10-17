@@ -109,7 +109,7 @@ export function Boton({
   tipo?: "button" | "submit";
 }) {
   const estilos = {
-    primario: "bg-slate-900 text-white hover:bg-slate-800",
+    primario: "bg-pf-boton text-white hover:bg-pf-boton-hover",
     secundario: "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
     verde: "bg-emerald-600 text-white hover:bg-emerald-700",
   }[variante];
@@ -119,7 +119,7 @@ export function Boton({
       onClick={onClick}
       disabled={deshabilitado}
       title={titulo}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 ${estilos}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-pf-enlace focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 ${estilos}`}
     >
       {children}
     </button>

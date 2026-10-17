@@ -160,7 +160,7 @@ export default function Datos() {
             titulo="Validaciones"
             detalle="Las de esta base. La validación nocturna se ejecuta cada noche en GitHub Actions."
             accion={
-              <a href={ACCIONES_GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+              <a href={ACCIONES_GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
                 Ver en GitHub <ExternalLink className="h-3.5 w-3.5" />
               </a>
             }

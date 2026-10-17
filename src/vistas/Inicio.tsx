@@ -73,7 +73,7 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
             titulo="Requieren atención"
             detalle={`${alto} estudiante${alto === 1 ? "" : "s"} en riesgo alto`}
             accion={
-              <button onClick={() => ir("/estudiantes")} className="inline-flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+              <button onClick={() => ir("/estudiantes")} className="inline-flex items-center gap-1 text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
                 Ver todos <ArrowRight className="h-3.5 w-3.5" />
               </button>
             }
@@ -118,7 +118,7 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
                   {calidad.datos.reglas?.length} reglas revisadas: {calidad.datos.criticas} con fallas críticas y {calidad.datos.avisos} avisos.
                 </p>
               )}
-              <button onClick={() => ir("/datos")} className="mt-3 flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+              <button onClick={() => ir("/datos")} className="mt-3 flex items-center gap-1 text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
                 Ver cargas, reglas y validaciones <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -133,7 +133,7 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
               {estado.modelo.nombre} {estado.modelo.arquitectura}, entrenada con la base {estado.modelo.base}. Exactitud en la prueba: <span className="font-semibold text-slate-900">{pct(estado.modelo.exactitud, 1)}</span>.
             </p>
           )}
-          <button onClick={() => ir("/modelo")} className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-blue-700 hover:text-blue-900">
+          <button onClick={() => ir("/modelo")} className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-pf-enlace hover:text-pf-enlace-fuerte">
             Ver cómo se entrenó y se probó <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </Tarjeta>
