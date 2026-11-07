@@ -28,6 +28,7 @@ CURSOS = [
     ("algebra", "Álgebra", "Matemática"),
     ("aritm", "Aritmética", "Matemática"),
     ("r.m", "Razonamiento matemático", "Matemática"),
+    ("raz. mat", "Razonamiento matemático", "Matemática"),  # así lo escribe Cubicol
     ("r.v", "Razonamiento verbal", "Comunicación"),
     ("lenguaje", "Lenguaje", "Comunicación"),
     ("literatura", "Literatura", "Comunicación"),
