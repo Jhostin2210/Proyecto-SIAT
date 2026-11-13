@@ -2,6 +2,8 @@
 
 Actividades A-0.1.1.2 (calidad y disponibilidad de los datos) y A-0.1.1.3 (variables) del cronograma. Las cifras salen de cargar la base consolidada de notas del colegio en un equipo del proyecto, el 10/10/2026. Este documento no contiene datos de ningún estudiante.
 
+> **Actualización del 13/11/2026: base rearmada solo con Cubicol.** A pedido del Product Owner, la base real se rehízo con las exportaciones de Cubicol: la lista de estudiantes y las notas salen de ellas, y ya no se usan el libro consolidado ni las fotografías. La base anterior quedó guardada como respaldo en la carpeta privada. Resultado: 60 exportaciones (3.° a 6.° de primaria y 1.° a 3.° de secundaria; marzo, abril y mayo de 2026), 411 filas, **402 notas de 48 estudiantes** (50 en la lista; 2 solo tienen promedios vacíos), 7 cursos, reconciliación correcta y ningún duplicado. Todos los estudiantes tienen nombre completo, no hay notas por validar ni notas en cero, y la nota más baja es 11. Las secciones siguientes describen la base anterior y se conservan como antecedente.
+
 ## 1. Qué datos hay
 
 La fuente es un libro de Excel que consolida todo lo entregado por el colegio, con una fila por nota (3 937 filas) y, en cada fila, de qué archivo u hoja salió.

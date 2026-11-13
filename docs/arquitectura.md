@@ -5,8 +5,8 @@ Actividad A-0.1.1.4 del cronograma. Describe las piezas del sistema, cómo circu
 ## Vista general
 
 ```
- Base consolidada de notas (Excel)
-            │  python -m etl.cargar_notas        ← asigna un código único; no lee el DNI
+ Exportaciones de Cubicol (.xls)
+            │  python -m etl.cargar_cubicol      ← asigna un código único; no lee el DNI
             ▼
  ┌──────────────────────┐   cada noche    ┌─────────────────────────┐
  │   Base de datos      │◄───────────────│ Validación automática    │

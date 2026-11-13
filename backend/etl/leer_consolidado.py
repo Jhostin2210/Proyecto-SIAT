@@ -40,6 +40,7 @@ CURSOS = [
     ("personal social", "Personal Social", "Ciencias Sociales"),
     ("cultura general", "Cultura General", "Ciencias Sociales"),
     ("ciencia y tecnologia", "Ciencia y Tecnología", "Ciencia y Tecnología"),
+    ("c. t. a", "Ciencia y Tecnología", "Ciencia y Tecnología"),  # sigla antigua (Ciencia, Tecnología y Ambiente) en Cubicol
     ("ciencia y ambiente", "Ciencia y Ambiente", "Ciencia y Tecnología"),
 ]
 

@@ -10,7 +10,11 @@ Los estudiantes se enlazan con su código ya existente, dentro de su grado:
 2. si las palabras del nombre son las mismas que las de un solo estudiante del grado;
 3. si las palabras del nombre están todas dentro del nombre de un solo estudiante del grado.
 Los que no se enlazan con certeza no se cargan: quedan en una lista para revisarlos.
-Este módulo no crea estudiantes ni guarda nombres fuera de la carpeta privada.
+
+Desde el 13/11/2026 la lista de estudiantes también sale de Cubicol (estudiantes_de_cubicol): la base
+real se rearmó solo con sus exportaciones, a pedido del Product Owner. Los nombres solo quedan en la
+base y en la carpeta privada.
+
 """
 
 import csv
@@ -21,6 +25,8 @@ from pathlib import Path
 from etl.leer_consolidado import curso_oficial, periodo_de, plano
 
 GRADOS = {"primero": 1, "segundo": 2, "tercer": 3, "tercero": 3, "cuarto": 4, "quinto": 5, "sexto": 6}
+# En secundaria Cubicol escribe el grado abreviado: «Secundaria 1er Año», «2do Año», «3er Año»…
+GRADOS.update({"1er": 1, "1ro": 1, "2do": 2, "3er": 3, "3ro": 3, "4to": 4, "5to": 5, "6to": 6})
 # El promedio de los criterios de la unidad es la evaluación continua del mes: se guarda como «trabajo»
 # (catálogo de la base) y se distingue por su fuente, «CUBICOL».
 COMPONENTE = "trabajo"
@@ -75,6 +81,43 @@ def enlazar(nombre, nivel, numero, claves: dict, grado_por_codigo: dict, equival
     if len(iguales) > 1 or len(contenidos) > 1:
         return None, "coincide con más de un estudiante del grado"
     return None, "sin coincidencia segura en el grado"
+
+
+def grado_texto(nivel: str, numero: int) -> str:
+    """(«primaria», 4) → «4° Primaria», como en la tabla de matrículas."""
+    return f"{numero}° {nivel.capitalize()}"
+
+
+def estudiantes_de_cubicol(archivos, anio: int = 2026) -> dict:
+    """Lista de estudiantes tomada de las exportaciones: {clave: ficha}. La clave es «nombre|grado|año».
+
+    Cubicol escribe «APELLIDOS, NOMBRES». Como en la carga anterior, se guarda un solo apellido.
+    """
+    import xlrd
+
+    fichas = {}
+    for archivo in sorted(Path(a) for a in archivos):
+        hoja = xlrd.open_workbook(str(archivo), ignore_workbook_corruption=True).sheet_by_index(0)
+        nivel, numero = grado_de(_cabecera(hoja)["salon"])
+        if not numero:
+            continue
+        grado = grado_texto(nivel, numero)
+        for r in range(8, hoja.nrows):
+            if str(hoja.cell_value(r, 0)).strip() == "":
+                continue
+            nombre = str(hoja.cell_value(r, 1)).strip()
+            apellidos, _, nombres = nombre.partition(",")
+            clave = f"{plano(nombre)}|{grado}|{anio}"
+            fichas.setdefault(
+                clave,
+                {
+                    "nombres": (nombres or apellidos).strip().title(),
+                    "apellido": (apellidos.split() or [""])[0].title() if nombres else None,
+                    "identidad": "completa" if nombres else "solo_nombre",
+                    "matriculas": {anio: (nivel, grado)},
+                },
+            )
+    return fichas
 
 
 def leer_cubicol(archivos, claves: dict, grado_por_codigo: dict, ruta_equivalencias=None, anio: int = 2026) -> dict:

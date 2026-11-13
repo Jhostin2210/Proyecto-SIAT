@@ -65,7 +65,8 @@ def main():
         "estudiantes": int(d["est"].nunique()),
         "les_fue_mal": int(d["mal"].sum()),
         "proporcion": round(float(d["mal"].mean()), 3),
-        "auc_roc": round(float(roc_auc_score(d["mal"], d["probabilidad"])), 3),
+        # Sin casos desaprobados (o sin aprobados) el AUC no se puede calcular: se guarda vacío.
+        "auc_roc": round(float(roc_auc_score(d["mal"], d["probabilidad"])), 3) if d["mal"].nunique() == 2 else None,
         "niveles": niveles,
         "alerta_solo_alto": _alerta(d, [ALTO]),
         "alerta_medio_y_alto": _alerta(d, [ALTO, MEDIO]),

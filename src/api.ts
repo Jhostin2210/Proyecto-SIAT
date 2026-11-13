@@ -122,7 +122,7 @@ export interface Modelo {
     estudiantes: number;
     les_fue_mal: number;
     proporcion: number;
-    auc_roc: number;
+    auc_roc: number | null;
     niveles: Record<"alto" | "medio" | "bajo", { casos: number; les_fue_mal: number }>;
     alerta_solo_alto: Medidas & { detecta: number; aciertos: number };
     alerta_medio_y_alto: Medidas & { detecta: number; aciertos: number };

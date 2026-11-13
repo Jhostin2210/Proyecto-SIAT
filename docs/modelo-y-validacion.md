@@ -94,7 +94,9 @@ En el colegio se aprueba con 11 y en la base pública con 10, así que a las not
 
 `python -m ml.comprobar_en_colegio`, con la base de datos reales en local. La red no se entrena con estos datos. Para cada estudiante y curso se toma el nivel que dio la red en un periodo y se compara con lo que pasó en el periodo siguiente: si la nota del curso fue menor de 11.
 
-Son 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
+**Con la base rearmada desde Cubicol (13/11/2026):** 268 casos de 48 estudiantes. En ninguno la nota del periodo siguiente fue desaprobatoria (la nota más baja es 11), así que todavía no se puede medir cuánto detecta la red en el colegio ni su AUC. La red dio riesgo medio en 50 casos y bajo en 218. Hay que repetir esta comprobación cuando lleguen periodos con notas desaprobatorias (validación acordada en la SC-08).
+
+Con la base anterior (consolidado y fotografías, hasta el 13/11/2026) eran 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
 
 | Nivel que dio la red | Casos | Les fue mal después |
 |---|---|---|

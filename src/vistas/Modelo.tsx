@@ -274,7 +274,7 @@ export default function Modelo() {
               </table>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              AUC en el colegio: {col.auc_roc.toFixed(2).replace(".", ",")}. Sin modelo, decir que a nadie le irá mal acierta {pct(col.exactitud_sin_modelo, 1)}: por eso la exactitud sola no basta para juzgar las alertas.
+              {col.auc_roc === null ? "AUC en el colegio: no se puede calcular todavía, porque en estos datos ninguna nota del periodo siguiente fue desaprobatoria." : `AUC en el colegio: ${col.auc_roc.toFixed(2).replace(".", ",")}.`} Sin modelo, decir que a nadie le irá mal acierta {pct(col.exactitud_sin_modelo, 1)}: por eso la exactitud sola no basta para juzgar las alertas.
             </p>
           </div>
         </Tarjeta>
