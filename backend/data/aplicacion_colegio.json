@@ -1,8 +1,8 @@
 {
- "fecha": "2026-11-13 12:37",
+ "fecha": "2026-11-15 12:50",
  "version_modelo": "red_neuronal_20261010",
  "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con la nota del curso en el periodo siguiente.",
- "casos": 268,
+ "casos": 550,
  "estudiantes": 48,
  "les_fue_mal": 0,
  "proporcion": 0.0,
@@ -13,17 +13,17 @@
    "les_fue_mal": 0
   },
   "medio": {
-   "casos": 50,
+   "casos": 121,
    "les_fue_mal": 0
   },
   "bajo": {
-   "casos": 218,
+   "casos": 429,
    "les_fue_mal": 0
   }
  },
  "alerta_solo_alto": {
   "matriz": {
-   "verdaderos_negativos": 268,
+   "verdaderos_negativos": 550,
    "falsos_positivos": 0,
    "falsos_negativos": 0,
    "verdaderos_positivos": 0
@@ -34,19 +34,19 @@
  },
  "alerta_medio_y_alto": {
   "matriz": {
-   "verdaderos_negativos": 218,
-   "falsos_positivos": 50,
+   "verdaderos_negativos": 429,
+   "falsos_positivos": 121,
    "falsos_negativos": 0,
    "verdaderos_positivos": 0
   },
-  "exactitud": 0.813,
+  "exactitud": 0.78,
   "detecta": 0.0,
   "aciertos": 0.0
  },
  "exactitud_sin_modelo": 1.0,
  "estudiantes_por_nivel": {
-  "Riesgo bajo": 41,
-  "Riesgo medio": 7,
+  "Riesgo bajo": 35,
+  "Riesgo medio": 13,
   "Riesgo alto": 0
  }
 }
