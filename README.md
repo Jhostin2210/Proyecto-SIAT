@@ -23,7 +23,7 @@ El sistema carga la base de notas del colegio, valida los datos cada noche y cal
 
 `GET /api/estado` informa en todo momento qué datos se muestran y de dónde sale el nivel de riesgo.
 
-Más detalle en [docs/arquitectura.md](docs/arquitectura.md), [docs/datos-y-variables.md](docs/datos-y-variables.md), [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md) y [docs/pruebas-sprint-2.md](docs/pruebas-sprint-2.md).
+Más detalle en [docs/arquitectura.md](docs/arquitectura.md), [docs/datos-y-variables.md](docs/datos-y-variables.md), [docs/modelo-y-validacion.md](docs/modelo-y-validacion.md), [docs/modelo-entidad-relacion.md](docs/modelo-entidad-relacion.md) y [docs/pruebas-sprint-2.md](docs/pruebas-sprint-2.md).
 
 ## El modelo, en corto
 

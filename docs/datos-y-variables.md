@@ -4,6 +4,22 @@ Actividades A-0.1.1.2 (calidad y disponibilidad de los datos) y A-0.1.1.3 (varia
 
 > **Actualización del 13/11/2026: base rearmada solo con Cubicol.** A pedido del Product Owner, la base real se rehízo con las exportaciones de Cubicol: la lista de estudiantes y las notas salen de ellas, y ya no se usan el libro consolidado ni las fotografías. La base anterior quedó guardada como respaldo en la carpeta privada. Resultado: 60 exportaciones (3.° a 6.° de primaria y 1.° a 3.° de secundaria; marzo, abril y mayo de 2026), 411 filas, **402 notas de 48 estudiantes** (50 en la lista; 2 solo tienen promedios vacíos), 7 cursos, reconciliación correcta y ningún duplicado. Todos los estudiantes tienen nombre completo, no hay notas por validar ni notas en cero, y la nota más baja es 11. El 15/11/2026 se sumó la carga 3 (45 exportaciones de junio, julio y agosto de 3.° a 6.° de primaria, 282 notas): la base queda con **684 notas de 48 estudiantes y seis meses (marzo a agosto de 2026)**, y ninguna nota es menor de 11, porque Cubicol guarda el promedio después de la recuperación. Desde el 15/11/2026 se guarda también el promedio de cada competencia (tabla `competencias`: 2 475 promedios, 132 menores de 11), que sirve para validar el modelo (SC-14). Las secciones siguientes describen la base anterior y se conservan como antecedente.
 
+## Mapa de las fuentes de datos (actividad A-2.1.1.1, al 15/11/2026)
+
+| Dato | Dónde está en el colegio | Quién lo entrega | Formato | Cobertura en la base | Tabla de destino | Situación |
+|---|---|---|---|---|---|---|
+| Promedio mensual de cada curso | Cubicol, «Registro auxiliar» | Gestora de Cubicol, a través del Product Owner | .xls, un archivo por salón, curso y mes | 3.° a 6.° de primaria: marzo a agosto. 1.° a 3.° de secundaria: marzo a mayo | `notas` | **En uso** (tres cargas: 07/11, 13/11 y 15/11/2026) |
+| Promedio de cada competencia | El mismo registro auxiliar | Igual | Mismas columnas «PROMEDIO» de cada competencia | Igual | `competencias` | **En uso** desde el 15/11/2026 (SC-14) |
+| Lista de estudiantes y grado | Cabecera y filas del registro auxiliar | Igual | Igual | 50 estudiantes | `estudiantes`, `matriculas` | **En uso** (SC-13) |
+| Asistencia | Registro en papel de los auxiliares | — | Papel | Ninguna | `asistencia` | **No digital** (incidente IN-02, supuesto S-03) |
+| Incidencias de conducta | Hoja de incidencia escolar en papel | Coordinación, a través del Product Owner | Papel (hay foto del formato) | Ninguna | `incidencias` | **No digital** (consulta del 03/11/2026) |
+| Participación en clase | Cuaderno del docente | — | Papel | Ninguna | — | **No registrada** |
+| Grados que faltan | Cubicol | Gestora de Cubicol | .xls | 1.° y 2.° de primaria; 4.° y 5.° de secundaria | `notas` | **Por pedir** antes del piloto (Sprint 5) |
+| Base consolidada y fotografías de cuadernos | Archivos de trabajo del equipo anterior | — | .xlsx y fotos | Ya no se usan | — | **Descartada** el 13/11/2026 (SC-13); respaldo privado |
+| Base pública *Student Performance* (UCI) | Repositorio de la Universidad de California en Irvine | Pública | .csv | 1 044 registros de 662 estudiantes de Portugal | Solo para entrenar el modelo | **En uso** para el entrenamiento; nunca se mezcla con la base del colegio |
+
+Frecuencia prevista: una exportación de Cubicol por bimestre, pedida por el Product Owner con fecha de entrega acordada.
+
 ## 1. Qué datos hay
 
 La fuente es un libro de Excel que consolida todo lo entregado por el colegio, con una fila por nota (3 937 filas) y, en cada fila, de qué archivo u hoja salió.
