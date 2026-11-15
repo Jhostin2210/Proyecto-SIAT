@@ -6,6 +6,7 @@ No devuelve datos de relleno: si la base está vacía, lo dice. El endpoint /api
 informa siempre qué datos se están mostrando y de dónde sale el nivel de riesgo.
 """
 
+import asyncio
 import csv
 import io
 import json
@@ -24,10 +25,11 @@ from sqlalchemy import func, select
 from etl.cargar_notas import cargar_archivo
 from etl.database import engine
 from etl.informe import ALTO, BAJO, MEDIO, nivel_de
-from etl.modelo_datos import NIVELES_RIESGO, calidad_datos, cargas, crear_tablas, cursos, estudiantes, matriculas, notas, perfiles, periodos, predicciones
+from etl.modelo_datos import NIVELES_RIESGO, calidad_datos, cargas, clasificaciones, crear_tablas, cursos, estudiantes, matriculas, notas, perfiles, periodos, predicciones
 from etl.perfil import COLUMNAS, DESCRIPCION, leer_base_publica, para_el_modelo
 from etl.reporte_pdf import reporte_estudiante
-from etl.riesgo import calcular_riesgo, cargar_modelo, evaluar_cursos, informes
+from etl.riesgo import RUTA_UMBRALES, calcular_riesgo, cargar_modelo, evaluar_cursos, informes, resumen_por_periodo, ultima_clasificacion
+from ml.clasificar_semanal import DIAS as DIAS_CLASIFICACION, clasificar_si_toca
 from etl.validar_datos import REGLAS_CRITICAS, validar
 from etl.variables import NOTA_APROBATORIA
 from etl.hora import ahora
@@ -52,8 +54,22 @@ def preparar_base():
     modelo = cargar_modelo()
     with engine.connect() as cx:
         version = cx.execute(select(predicciones.c.version).limit(1)).scalar()
-    if not vacia and version != (modelo["version"] if modelo else None):
-        calcular_riesgo(engine)
+    # La versión guardada puede llevar «+cortes_…» (cortes del colegio): se compara solo la del modelo.
+    if not vacia and (version or "").split("+")[0] != (modelo["version"] if modelo else None):
+        calcular_riesgo(engine, "cambio del modelo")
+    elif not vacia:
+        clasificar_si_toca(engine)
+
+
+async def vigilar_clasificacion_semanal():
+    """Cada hora revisa si ya pasaron 7 días desde la última clasificación y, si es así, clasifica (REQ-04)."""
+    while True:
+        await asyncio.sleep(3600)
+        try:
+            if await asyncio.to_thread(clasificar_si_toca, engine):
+                _memoria["clave"] = None
+        except Exception as e:
+            print(f"[SIA-T] Clasificación semanal no realizada: {e}")
 
 
 @asynccontextmanager
@@ -62,7 +78,9 @@ async def ciclo_de_vida(_: FastAPI):
         preparar_base()
     except Exception as e:  # la API debe poder arrancar y explicar el problema en /api/estado
         print(f"[SIA-T] No se pudo preparar la base de datos: {e}")
+    tarea = asyncio.create_task(vigilar_clasificacion_semanal())
     yield
+    tarea.cancel()
 
 
 app = FastAPI(
@@ -251,7 +269,7 @@ def listar_aulas():
 @app.post("/api/aulas/evaluar", summary="Vuelve a evaluar con el modelo a todos los estudiantes, o a un aula")
 def evaluar_aula(grado: Optional[str] = None):
     inicio = time.perf_counter()
-    resumen = calcular_riesgo(engine)
+    resumen = calcular_riesgo(engine, "a pedido")
     _memoria["clave"] = None
     lista = _resultados()["estudiantes"]
     if grado:
@@ -275,7 +293,30 @@ def obtener_modelo():
     reporte = _json(RUTA_REPORTE)
     if not reporte:
         return {"disponible": False, "mensaje": "Todavía no hay un modelo entrenado. El nivel de riesgo sale de una regla por nota."}
-    return {"disponible": True, **reporte, "aplicacion_colegio": _json(RUTA_APLICACION)}
+    return {"disponible": True, **reporte, "aplicacion_colegio": _json(RUTA_APLICACION), "cortes_colegio": _json(RUTA_UMBRALES)}
+
+
+# ───────────────────────── Clasificación semanal y evolución ─────────────────────────
+@app.get("/api/clasificaciones", summary="Bitácora de las clasificaciones del riesgo y fecha de la próxima semanal")
+def listar_clasificaciones():
+    crear_tablas(engine)
+    with engine.connect() as cx:
+        filas = [dict(f) for f in cx.execute(select(clasificaciones).order_by(clasificaciones.c.id.desc()).limit(20)).mappings()]
+    ultima = filas[0]["fecha"] if filas else None
+    return {
+        "frecuencia_dias": DIAS_CLASIFICACION,
+        "ultima": ultima,
+        "proxima": ultima + pd.Timedelta(days=DIAS_CLASIFICACION) if ultima else None,
+        "historial": filas,
+    }
+
+
+@app.get("/api/evolucion", summary="Niveles de riesgo y promedio por mes, en total y por aula, con el mes anterior")
+def evolucion(periodo: Optional[str] = None):
+    lista = resumen_por_periodo(engine)
+    if periodo:
+        lista = [p for p in lista if p["periodo"] == periodo or p["periodo"] == next((x.get("anterior") for x in lista if x["periodo"] == periodo), None)]
+    return lista
 
 
 _tipico = {}

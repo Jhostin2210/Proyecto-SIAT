@@ -66,7 +66,7 @@ El riesgo general de un estudiante junta sus cursos: basta un curso en riesgo al
 | `backend/data/publica/` | Base pública de entrenamiento, con su fuente y licencia. |
 | `backend/etl/generar_datos_practica.py`, `backend/data/notas_practica.csv` | Datos de práctica de la demostración. |
 | `backend/database/schema.sql` | El mismo esquema en SQL de PostgreSQL. |
-| `.github/workflows/` | Validación nocturna de los datos. |
+| `.github/workflows/` | Validación nocturna de los datos y clasificación semanal del riesgo. |
 | `docs/` | Arquitectura, datos y variables, modelo y pruebas. |
 | `frontend/` | Borrador anterior en Next.js; no está en uso. |
 

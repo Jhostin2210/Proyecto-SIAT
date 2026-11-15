@@ -24,6 +24,47 @@ function Dato({ titulo, valor, detalle }: { titulo: string; valor: string; detal
   );
 }
 
+function BitacoraClasificaciones() {
+  const { datos } = useDatos(api.clasificaciones);
+  if (!datos) return null;
+  return (
+    <Tarjeta className="mt-5">
+      <TituloTarjeta
+        titulo="Bitácora de clasificaciones del riesgo"
+        detalle={`El sistema vuelve a clasificar a todos los estudiantes cada ${datos.frecuencia_dias} días, además de hacerlo al cargar datos o a pedido.${datos.proxima ? ` Próxima clasificación automática: ${fecha(datos.proxima)}.` : ""}`}
+      />
+      {datos.historial.length === 0 ? (
+        <p className="px-6 py-6 text-sm text-slate-500">Todavía no hay clasificaciones registradas.</p>
+      ) : (
+        <div className="overflow-x-auto px-5 pb-5 pt-3">
+          <table className="w-full min-w-[560px] text-left text-[13px]">
+            <thead>
+              <tr className="border-b border-slate-200 text-xs text-slate-500">
+                <th className="py-2 font-medium">Fecha</th>
+                <th className="py-2 font-medium">Motivo</th>
+                <th className="py-2 text-center font-medium">Estudiantes</th>
+                <th className="py-2 text-center font-medium">Alto · medio · bajo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {datos.historial.slice(0, 10).map((h) => (
+                <tr key={h.id}>
+                  <td className="py-2 tabular-nums text-slate-700">{fecha(h.fecha)}</td>
+                  <td className="py-2 text-slate-700">{h.motivo}</td>
+                  <td className="py-2 text-center tabular-nums">{h.estudiantes}</td>
+                  <td className="py-2 text-center tabular-nums">
+                    <span className="font-semibold text-red-600">{h.alto}</span> · <span className="font-semibold text-amber-600">{h.medio}</span> · <span className="font-semibold text-emerald-600">{h.bajo}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Tarjeta>
+  );
+}
+
 export default function Datos() {
   const estado = useDatos(api.estado);
   const cargas = useDatos(api.cargas);
@@ -171,6 +212,7 @@ export default function Datos() {
         </Tarjeta>
       </div>
 
+      <BitacoraClasificaciones />
     </>
   );
 }

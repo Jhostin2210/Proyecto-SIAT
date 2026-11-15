@@ -2,6 +2,7 @@
 import { ArrowRight, Database, ShieldCheck } from "lucide-react";
 import { api, type Estado } from "../api";
 import { Cargando, Encabezado, ErrorDeCarga, Insignia, ir, miles, pct, Reparto, Tarjeta, TituloTarjeta, useDatos } from "../ui";
+import EvolucionPorMes, { ClasificacionSemanal } from "./Evolucion";
 
 function Indicador({ titulo, valor, detalle, color }: { titulo: string; valor: number | string; detalle: string; color?: string }) {
   return (
@@ -41,6 +42,7 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
   return (
     <>
       <Encabezado titulo="Panel de alerta temprana" detalle={estado?.periodo_actual ? `Situación al cierre de ${estado.periodo_actual.nombre.toLowerCase()}` : undefined} />
+      <ClasificacionSemanal />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Indicador titulo="Estudiantes evaluados" valor={total} detalle={`${aulas.datos.length} aulas`} />
@@ -48,6 +50,8 @@ export default function Inicio({ estado }: { estado: Estado | null }) {
         <Indicador titulo="Riesgo medio" valor={medio} detalle={`${pct(medio / total)} · en seguimiento`} color="bg-amber-500" />
         <Indicador titulo="Riesgo bajo" valor={bajo} detalle={`${pct(bajo / total)} · sin señales`} color="bg-emerald-500" />
       </div>
+
+      <EvolucionPorMes />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-5">
         <Tarjeta className="lg:col-span-3">

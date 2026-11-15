@@ -115,6 +115,7 @@ export interface Modelo {
   prueba: Medidas & { auc_roc: number; le_va_mal: { precision: number; recall: number; f1: number }; le_va_bien: { precision: number; recall: number; f1: number } };
   exactitud_sin_modelo: number;
   niveles: { alto_desde: number; medio_desde: number; equivalencia: string; curva: { nota: number; probabilidad: number }[] };
+  cortes_colegio?: CortesColegio | null;
   aplicacion_colegio: null | {
     fecha: string;
     como: string;
@@ -152,6 +153,46 @@ export interface Carga {
   notas_rechazadas: number;
 }
 
+export interface ResumenMes {
+  estudiantes: number;
+  alto: number;
+  medio: number;
+  bajo: number;
+  promedio: number | null;
+}
+
+export interface Periodo extends ResumenMes {
+  periodo: string;
+  periodo_nombre: string;
+  orden: number;
+  anterior?: string;
+  aulas: (ResumenMes & { grado: string })[];
+}
+
+export interface Clasificaciones {
+  frecuencia_dias: number;
+  ultima: string | null;
+  proxima: string | null;
+  historial: { id: number; fecha: string; motivo: string; version: string; estudiantes: number; bajo: number; medio: number; alto: number }[];
+}
+
+export interface MedidaAlerta {
+  alertas: number;
+  detecta: number;
+  aciertos: number;
+  verdaderos_positivos: number;
+  casos_con_dificultad: number;
+}
+
+export interface CortesColegio {
+  fecha: string;
+  umbrales: { medio: number; alto: number };
+  umbrales_anteriores: { medio: number; alto: number };
+  como: string;
+  reglas: { medio: string; alto: string; regla_simple: string };
+  prueba: { casos: number; casos_con_dificultad: number; auc_modelo: number; auc_regla_simple: number; modelo_medio_y_alto: MedidaAlerta; modelo_solo_alto: MedidaAlerta | null; regla_simple: MedidaAlerta; cortes_anteriores_medio_y_alto: MedidaAlerta };
+}
+
 export interface Ejecucion {
   fecha: string;
   criticas: number;
@@ -184,6 +225,8 @@ export const api = {
       { method: "POST" },
     ),
   modelo: () => pedir<Modelo>("/api/modelo"),
+  evolucion: () => pedir<Periodo[]>("/api/evolucion"),
+  clasificaciones: () => pedir<Clasificaciones>("/api/clasificaciones"),
   calidad: () => pedir<Calidad>("/api/calidad"),
   cargas: () => pedir<Carga[]>("/api/cargas"),
   historialCalidad: () => pedir<Ejecucion[]>("/api/calidad/historial"),

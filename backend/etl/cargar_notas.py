@@ -99,7 +99,7 @@ def cargar(registros, fichas, archivo, tipo_datos, filas_origen, rechazadas=0, e
         if nuevas:
             cx.execute(insert(notas), nuevas)
         cx.execute(update(cargas).where(cargas.c.id == carga_id).values(notas_cargadas=len(nuevas), notas_repetidas=repetidas))
-    riesgo = calcular_riesgo(engine)
+    riesgo = calcular_riesgo(engine, "carga de datos")
     return {"carga_id": carga_id, "leidas": len(registros), "cargadas": len(nuevas), "repetidas": repetidas, "rechazadas": rechazadas, "riesgo": riesgo}
 
 

@@ -4,6 +4,9 @@ import { ExternalLink } from "lucide-react";
 import { api, type Modelo as TModelo } from "../api";
 import { Aviso, Cargando, Encabezado, ErrorDeCarga, miles, pct, Tarjeta, TituloTarjeta, useDatos } from "../ui";
 
+const n3 = (v: number) => v.toFixed(3).replace(".", ",");
+const n2 = (v: number) => v.toFixed(2).replace(".", ",");
+
 function Dato({ titulo, valor, detalle }: { titulo: string; valor: string; detalle?: string }) {
   return (
     <Tarjeta className="p-5">
@@ -213,6 +216,11 @@ export default function Modelo() {
               </div>
             ))}
             <p className="pt-1 text-xs leading-5 text-slate-500">La curva muestra la probabilidad que la red da a cada nota del colegio en un estudiante típico. Los demás datos del estudiante pueden moverlo de nivel.</p>
+            {m.cortes_colegio && (
+              <p className="pt-1 text-xs leading-5 text-slate-500">
+                Estos son los cortes de la base pública, que se usan con los datos de práctica. Con los datos reales del colegio se usan los cortes ajustados (riesgo medio desde {n3(m.cortes_colegio.umbrales.medio)} y alto desde {n3(m.cortes_colegio.umbrales.alto)}), explicados más abajo.
+              </p>
+            )}
           </div>
         </div>
       </Tarjeta>
@@ -275,6 +283,52 @@ export default function Modelo() {
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">
               {col.auc_roc === null ? "AUC en el colegio: no se puede calcular todavía, porque en estos datos ninguna nota del periodo siguiente fue desaprobatoria." : `AUC en el colegio: ${col.auc_roc.toFixed(2).replace(".", ",")}.`} Sin modelo, decir que a nadie le irá mal acierta {pct(col.exactitud_sin_modelo, 1)}: por eso la exactitud sola no basta para juzgar las alertas.
+            </p>
+          </div>
+        </Tarjeta>
+      )}
+
+      {m.cortes_colegio && (
+        <Tarjeta className="mt-5">
+          <TituloTarjeta titulo="Cortes de nivel ajustados con datos del colegio" detalle={`Ajuste del ${m.cortes_colegio.fecha.slice(0, 10)}. ${m.cortes_colegio.como}`} />
+          <div className="px-6 pb-6 pt-4">
+            <p className="text-sm leading-6 text-slate-700">
+              Riesgo medio desde una probabilidad de <strong>{n3(m.cortes_colegio.umbrales.medio)}</strong> (antes {n3(m.cortes_colegio.umbrales_anteriores.medio)}) y riesgo alto desde{" "}
+              <strong>{n3(m.cortes_colegio.umbrales.alto)}</strong> (antes {n3(m.cortes_colegio.umbrales_anteriores.alto)}). Medio: {m.cortes_colegio.reglas.medio}. Alto: {m.cortes_colegio.reglas.alto}.
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[520px] text-left text-[13px]">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs text-slate-500">
+                    <th className="py-2 font-medium">Con los meses que el ajuste no vio ({m.cortes_colegio.prueba.casos} casos, {m.cortes_colegio.prueba.casos_con_dificultad} con dificultad)</th>
+                    <th className="py-2 text-center font-medium">Alertas</th>
+                    <th className="py-2 text-center font-medium">Detecta</th>
+                    <th className="py-2 text-center font-medium">Aciertos</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {(
+                    [
+                      ["Cortes anteriores (base pública)", m.cortes_colegio.prueba.cortes_anteriores_medio_y_alto],
+                      ["Cortes ajustados: niveles medio y alto", m.cortes_colegio.prueba.modelo_medio_y_alto],
+                      ["Cortes ajustados: solo nivel alto", m.cortes_colegio.prueba.modelo_solo_alto],
+                      [`Regla simple: ${m.cortes_colegio.reglas.regla_simple}`, m.cortes_colegio.prueba.regla_simple],
+                    ] as const
+                  ).map(([etiqueta, med]) =>
+                    med ? (
+                      <tr key={etiqueta}>
+                        <td className="py-2 text-slate-700">{etiqueta}</td>
+                        <td className="py-2 text-center tabular-nums">{med.alertas}</td>
+                        <td className="py-2 text-center tabular-nums font-semibold">{pct(med.detecta)}</td>
+                        <td className="py-2 text-center tabular-nums">{pct(med.aciertos)}</td>
+                      </tr>
+                    ) : null,
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              AUC en esos meses: modelo {n2(m.cortes_colegio.prueba.auc_modelo)}, regla simple {n2(m.cortes_colegio.prueba.auc_regla_simple)}. El modelo todavía no ordena mejor que la regla simple: su ventaja es acertar algo más en cada alerta. Superarla es la meta del Sprint 3.
             </p>
           </div>
         </Tarjeta>

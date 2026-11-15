@@ -49,13 +49,11 @@ def _alerta(d, niveles) -> dict:
     }
 
 
-def main():
-    sys.stdout.reconfigure(encoding="utf-8")
-    with engine.connect() as cx:
-        tipo = cx.execute(cargas.select().order_by(cargas.c.id.desc())).mappings().first()
-    if not tipo or tipo["tipo_datos"] != "reales":
-        sys.exit("La base no tiene datos reales del colegio: la comprobación no se hace con datos de práctica.")
-    resumen = calcular_riesgo(engine)
+def casos_con_resultado(engine) -> tuple:
+    """Casos (estudiante, curso y periodo) con el nivel que dio el modelo y si «le fue mal» en el periodo siguiente.
+
+    Devuelve (casos, origen, criterio, con_competencias). Lo usan esta comprobación y el ajuste de los cortes.
+    """
     casos, origen = evaluar_cursos(engine)
     # Peor competencia de cada estudiante, curso y periodo; se compara la del periodo siguiente.
     with engine.connect() as cx:
@@ -76,6 +74,17 @@ def main():
         "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); "
         f"en {int((~con_competencias).sum())} de {len(d)} casos sin datos por competencia se usa la nota del curso"
     )
+    return d, origen, criterio, con_competencias
+
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    with engine.connect() as cx:
+        tipo = cx.execute(cargas.select().order_by(cargas.c.id.desc())).mappings().first()
+    if not tipo or tipo["tipo_datos"] != "reales":
+        sys.exit("La base no tiene datos reales del colegio: la comprobación no se hace con datos de práctica.")
+    resumen = calcular_riesgo(engine, "comprobación del modelo")
+    d, origen, criterio, con_competencias = casos_con_resultado(engine)
     niveles = {}
     for clave, nivel in (("alto", ALTO), ("medio", MEDIO), ("bajo", BAJO)):
         g = d[d["nivel"] == nivel]

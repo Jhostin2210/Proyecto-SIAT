@@ -121,6 +121,21 @@ competencias = Table(
     CheckConstraint("nota >= 0 AND nota <= 20", name="chk_competencia_rango"),
 )
 
+# Bitácora de cada clasificación de los estudiantes: cuándo, por qué (semanal automática, carga de datos o a
+# pedido) y cuántos quedaron en cada nivel (REQ-04, paquete 1.3.2).
+clasificaciones = Table(
+    "clasificaciones",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("fecha", DateTime, nullable=False),
+    Column("motivo", String(30), nullable=False),
+    Column("version", String(60)),
+    Column("estudiantes", Integer, nullable=False, default=0),
+    Column("bajo", Integer, nullable=False, default=0),
+    Column("medio", Integer, nullable=False, default=0),
+    Column("alto", Integer, nullable=False, default=0),
+)
+
 # Perfil del estudiante: lo que el modelo usa además de las notas (historial, familia y hábitos).
 # Los valores usan los códigos de la base con que se entrenó el modelo; etl/perfil.py los describe.
 perfiles = Table(

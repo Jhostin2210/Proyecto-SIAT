@@ -98,13 +98,24 @@ En el colegio se aprueba con 11 y en la base pública con 10, así que a las not
 
 **Con la base de Cubicol (seis meses, de marzo a agosto de 2026):** 550 casos de 48 estudiantes; en 118 (21,5 %) alguna competencia del periodo siguiente salió desaprobada. AUC en el colegio: 0,71.
 
-| Nivel que dio la red | Casos | Les fue mal después |
-|---|---|---|
-| Riesgo alto | 0 | — |
-| Riesgo medio | 121 | 46 (38 %) |
-| Riesgo bajo | 429 | 72 (17 %) |
+Con los cortes de la base pública (medio desde 0,050 y alto desde 0,689) la red detectaba solo 46 de los 118 casos (39 %) y nunca daba riesgo alto. Por eso el 15/11/2026 se ajustaron los cortes con los datos del colegio (ver «Cortes ajustados»).
 
-Alertando los niveles medio y alto, la red detecta 46 de los 118 casos (39 %) y acierta en 38 % de sus alertas; sin modelo, decir que a nadie le irá mal acierta 78,5 %. La red ordena mejor que el azar, pero con estos datos detecta menos de la mitad: los cortes de nivel se fijaron con la base pública y conviene revisarlos con los datos del colegio en el Sprint 3.
+### Cortes ajustados con los datos del colegio (15/11/2026)
+
+`python -m ml.ajustar_cortes`. La red **no se vuelve a entrenar**: solo se eligen los dos cortes que llevan su probabilidad a los niveles. Para no medir con los mismos datos del ajuste, los cortes se eligen con los casos de **marzo y abril** y el resultado se mide con los de **mayo a agosto**, que el ajuste no vio. Reglas fijadas antes de mirar la prueba: el corte medio es el más alto que detecta al menos el 75 % de los casos con dificultad (meta del proyecto); el corte alto, el más bajo con el que al menos el 45 % de las alertas acierta. Resultado: **medio desde 0.025 y alto desde 0.085** (`data/umbrales_colegio.json`). Solo se aplican a los datos reales; los datos de práctica conservan los cortes de la base pública.
+
+Con los meses que el ajuste no vio (282 casos, 70 con dificultad):
+
+| Si se alerta… | Alertas | Detecta | Aciertos |
+|---|---|---|---|
+| Cortes anteriores, medio y alto | 71 | 43 % | 42 % |
+| **Cortes ajustados, medio y alto** | 155 | **80 %** | 36 % |
+| Cortes ajustados, solo alto | 29 | 17 % | 41 % |
+| Regla simple: la nota actual del curso es 16 o menos (corte elegido con la misma meta de detección) | 198 | 91 % | 32 % |
+
+AUC en esos meses: red 0,706, regla simple 0,713.
+
+**Lectura.** Con los cortes ajustados la detección pasa de 43 % a 80 % en meses que el ajuste no vio, y cumple la meta del 75 %. Pero la red **todavía no ordena mejor que una regla simple** por nota (mismo AUC): su ventaja es acertar algo más en cada alerta con menos alertas. Superar a la regla simple es la meta del Sprint 3 (por ejemplo, usando las competencias como variables). Con los cortes ajustados, al 15/11/2026 hay 10 estudiantes en riesgo alto, 20 en medio y 18 en bajo.
 
 Con la base anterior (consolidado y fotografías, hasta el 13/11/2026) eran 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
 
@@ -143,6 +154,10 @@ python -m ml.entrenar_red_neuronal            # entrena, prueba y guarda la red 
 
 $env:SQLITE_PATH = "data/privado/sia_t_reales.db"
 python -m ml.comprobar_en_colegio             # aplica la red a los datos reales y compara
+python -m ml.ajustar_cortes                   # ajusta los cortes de nivel con los datos del colegio
+python -m ml.clasificar_semanal               # clasificación semanal (si pasaron 7 días; --forzar para hacerla ya)
 ```
+
+**Clasificación semanal automática (REQ-04, desde el 15/11/2026).** La API revisa cada hora si pasaron 7 días desde la última clasificación y, si es así, vuelve a clasificar a todos los estudiantes; además, la tarea `clasificacion-semanal.yml` de GitHub Actions corre cada lunes a las 06:00 de Lima. Cada clasificación queda en la tabla `clasificaciones` con su motivo (semanal automática, carga de datos, a pedido o ajuste de cortes) y se ve en la pantalla «Datos» y en el inicio del panel.
 
 El primero escribe `models/red_neuronal_riesgo.joblib` (preparación de los datos, escalador, red y cortes, en un solo archivo) y `data/red_neuronal_report.json`. El segundo, `data/aplicacion_colegio.json`.
