@@ -94,7 +94,17 @@ En el colegio se aprueba con 11 y en la base pública con 10, así que a las not
 
 `python -m ml.comprobar_en_colegio`, con la base de datos reales en local. La red no se entrena con estos datos. Para cada estudiante y curso se toma el nivel que dio la red en un periodo y se compara con lo que pasó en el periodo siguiente: si la nota del curso fue menor de 11.
 
-**Con la base rearmada desde Cubicol (al 15/11/2026, seis meses de marzo a agosto):** 550 casos de 48 estudiantes. En ninguno la nota del periodo siguiente fue desaprobatoria (en las 684 notas de Cubicol la más baja es 11), así que todavía no se puede medir cuánto detecta la red en el colegio ni su AUC. La red dio riesgo medio en 121 casos y bajo en 429. Por consultar con el colegio: si el registro auxiliar guarda el promedio después de la recuperación; si es así, el criterio «le fue mal = nota menor de 11» de la SC-08 habrá que revisarlo.
+**Criterio vigente (SC-14, aprobada por el Product Owner el 15/11/2026).** Cubicol guarda el promedio del curso después de la recuperación, que nunca baja de 11. Por eso «le fue mal» se mide por competencias: si alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente. El registro auxiliar trae el promedio de cada competencia y el sistema lo guarda en la tabla `competencias` (2 475 promedios, 132 menores de 11). En 27 casos sin datos por competencia se usa la nota del curso.
+
+**Con la base de Cubicol (seis meses, de marzo a agosto de 2026):** 550 casos de 48 estudiantes; en 118 (21,5 %) alguna competencia del periodo siguiente salió desaprobada. AUC en el colegio: 0,71.
+
+| Nivel que dio la red | Casos | Les fue mal después |
+|---|---|---|
+| Riesgo alto | 0 | — |
+| Riesgo medio | 121 | 46 (38 %) |
+| Riesgo bajo | 429 | 72 (17 %) |
+
+Alertando los niveles medio y alto, la red detecta 46 de los 118 casos (39 %) y acierta en 38 % de sus alertas; sin modelo, decir que a nadie le irá mal acierta 78,5 %. La red ordena mejor que el azar, pero con estos datos detecta menos de la mitad: los cortes de nivel se fijaron con la base pública y conviene revisarlos con los datos del colegio en el Sprint 3.
 
 Con la base anterior (consolidado y fotografías, hasta el 13/11/2026) eran 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
 

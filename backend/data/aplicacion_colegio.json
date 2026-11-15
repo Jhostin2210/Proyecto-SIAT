@@ -1,12 +1,14 @@
 {
- "fecha": "2026-11-15 12:50",
+ "fecha": "2026-11-15 13:05",
  "version_modelo": "red_neuronal_20261010",
- "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con la nota del curso en el periodo siguiente.",
+ "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con lo que pasó en el periodo siguiente.",
+ "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 550 casos sin datos por competencia se usa la nota del curso",
+ "casos_por_competencia": 523,
  "casos": 550,
  "estudiantes": 48,
- "les_fue_mal": 0,
- "proporcion": 0.0,
- "auc_roc": null,
+ "les_fue_mal": 118,
+ "proporcion": 0.215,
+ "auc_roc": 0.713,
  "niveles": {
   "alto": {
    "casos": 0,
@@ -14,36 +16,36 @@
   },
   "medio": {
    "casos": 121,
-   "les_fue_mal": 0
+   "les_fue_mal": 46
   },
   "bajo": {
    "casos": 429,
-   "les_fue_mal": 0
+   "les_fue_mal": 72
   }
  },
  "alerta_solo_alto": {
   "matriz": {
-   "verdaderos_negativos": 550,
+   "verdaderos_negativos": 432,
    "falsos_positivos": 0,
-   "falsos_negativos": 0,
+   "falsos_negativos": 118,
    "verdaderos_positivos": 0
   },
-  "exactitud": 1.0,
+  "exactitud": 0.785,
   "detecta": 0.0,
   "aciertos": 0.0
  },
  "alerta_medio_y_alto": {
   "matriz": {
-   "verdaderos_negativos": 429,
-   "falsos_positivos": 121,
-   "falsos_negativos": 0,
-   "verdaderos_positivos": 0
+   "verdaderos_negativos": 357,
+   "falsos_positivos": 75,
+   "falsos_negativos": 72,
+   "verdaderos_positivos": 46
   },
-  "exactitud": 0.78,
-  "detecta": 0.0,
-  "aciertos": 0.0
+  "exactitud": 0.733,
+  "detecta": 0.39,
+  "aciertos": 0.38
  },
- "exactitud_sin_modelo": 1.0,
+ "exactitud_sin_modelo": 0.785,
  "estudiantes_por_nivel": {
   "Riesgo bajo": 35,
   "Riesgo medio": 13,

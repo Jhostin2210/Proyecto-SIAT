@@ -222,7 +222,7 @@ export default function Modelo() {
           <TituloTarjeta titulo="Aplicación en el colegio" detalle={`${col.casos} casos de ${col.estudiantes} estudiantes · ${col.fecha.slice(0, 10)}`} />
           <div className="px-6 pb-6 pt-4">
             <p className="max-w-3xl text-sm leading-6 text-slate-700">
-              {col.como} En {col.les_fue_mal} de los {col.casos} casos ({pct(col.proporcion, 1)}) la nota del curso fue desaprobatoria en el periodo siguiente.
+              {col.como} Cuenta como «le fue mal» si {col.criterio ?? "la nota del curso fue menor de 11 en el periodo siguiente"}. Pasó en {col.les_fue_mal} de los {col.casos} casos ({pct(col.proporcion, 1)}).
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {(

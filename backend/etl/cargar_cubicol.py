@@ -26,12 +26,12 @@ from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import func, select
+from sqlalchemy import func, insert, select
 
 from etl.cargar_notas import RUTA_CLAVES, asignar_codigos, cargar, reconciliar
 from etl.database import engine as engine_por_defecto
 from etl.leer_cubicol import estudiantes_de_cubicol, leer_cubicol
-from etl.modelo_datos import crear_tablas, estudiantes, matriculas
+from etl.modelo_datos import competencias, crear_tablas, cursos, estudiantes, matriculas, periodos
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUTA_EQUIVALENCIAS = os.path.join(BASE, "data", "privado", "cubicol_equivalencias.csv")
@@ -53,6 +53,25 @@ def _grados(engine) -> dict:
         return dict(cx.execute(consulta).all())
 
 
+def guardar_competencias(notas_leidas, engine, carga_id) -> int:
+    """Guarda el promedio de cada competencia que aún no esté en la base. Devuelve cuántos agregó."""
+    with engine.begin() as cx:
+        est = dict(cx.execute(select(estudiantes.c.codigo, estudiantes.c.id)).all())
+        cur = dict(cx.execute(select(cursos.c.nombre, cursos.c.id)).all())
+        per = dict(cx.execute(select(periodos.c.codigo, periodos.c.id)).all())
+        hay = {tuple(f) for f in cx.execute(select(competencias.c.estudiante_id, competencias.c.curso_id, competencias.c.periodo_id, competencias.c.competencia))}
+        nuevas = []
+        for n in notas_leidas:
+            for nombre, valor in n.get("competencias", []):
+                llave = (est[n["codigo"]], cur[n["curso"]], per[n["periodo"]], nombre)
+                if llave not in hay:
+                    hay.add(llave)
+                    nuevas.append({"estudiante_id": llave[0], "curso_id": llave[1], "periodo_id": llave[2], "competencia": nombre, "nota": valor, "carga_id": carga_id})
+        if nuevas:
+            cx.execute(insert(competencias), nuevas)
+    return len(nuevas)
+
+
 def cargar_carpeta(carpeta, engine=engine_por_defecto, ruta_claves=RUTA_CLAVES, ruta_equivalencias=RUTA_EQUIVALENCIAS, como_base=False) -> dict:
     archivos = [p for p in Path(carpeta).rglob("*.xls") if not p.name.startswith("~$")]
     fichas = {}
@@ -72,6 +91,7 @@ def cargar_carpeta(carpeta, engine=engine_por_defecto, ruta_claves=RUTA_CLAVES, 
     rechazadas = sum(h["cantidad"] for h in leido["hallazgos"])
     etiqueta = f"Cubicol: {Path(carpeta).name} ({leido['archivos']} archivos){' · base nueva' if como_base else ''}"
     resumen = cargar(leido["notas"], fichas, etiqueta, "reales", leido["filas_origen"], rechazadas, engine)
+    resumen["competencias"] = guardar_competencias(leido["notas"], engine, resumen["carga_id"])
     resumen.update(hallazgos=leido["hallazgos"], filas_origen=leido["filas_origen"], archivos=leido["archivos"], sin_identificar=leido["sin_identificar"])
     resumen["diferencias"] = reconciliar(leido["notas"], engine)
     resumen["estudiantes"] = len({n["codigo"] for n in leido["notas"]})
@@ -95,6 +115,7 @@ def main():
     for criterio, n in r["enlaces"].items():
         print(f"  - enlazados por {criterio}: {n}")
     print(f"Notas válidas: {r['leidas']} | cargadas: {r['cargadas']} | ya estaban: {r['repetidas']} | no cargadas: {r['rechazadas']}")
+    print(f"Promedios por competencia agregados: {r['competencias']}")
     for h in r["hallazgos"]:
         print(f"  - {h['regla']}: {h['cantidad']}. {h['detalle']}")
     if r["sin_identificar"]:

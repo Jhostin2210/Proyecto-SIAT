@@ -83,6 +83,15 @@ def enlazar(nombre, nivel, numero, claves: dict, grado_por_codigo: dict, equival
     return None, "sin coincidencia segura en el grado"
 
 
+def _numero(valor):
+    """Nota de 0 a 20 escrita como número o como texto («05»); None si está vacía o no es una nota."""
+    try:
+        n = float(str(valor).strip())
+    except ValueError:
+        return None
+    return n if 0 <= n <= 20 else None
+
+
 def grado_texto(nivel: str, numero: int) -> str:
     """(«primaria», 4) → «4° Primaria», como en la tabla de matrículas."""
     return f"{numero}° {nivel.capitalize()}"
@@ -140,6 +149,12 @@ def leer_cubicol(archivos, claves: dict, grado_por_codigo: dict, ruta_equivalenc
         nivel, numero = grado_de(cab["salon"])
         curso = curso_oficial(cab["curso"])
         periodo = periodo_de(cab["unidad"], TIPO, anio)
+        # Columnas «PROMEDIO» de cada competencia (fila 6) y nombre de la competencia (fila 5, al inicio de su grupo).
+        grupos, inicio = [], 4
+        for c in range(4, hoja.ncols):
+            if str(hoja.cell_value(6, c)).strip().upper() == "PROMEDIO":
+                grupos.append((str(hoja.cell_value(5, inicio)).strip()[:120] or f"Competencia {len(grupos) + 1}", c))
+                inicio = c + 1
         for r in range(8, hoja.nrows):
             if str(hoja.cell_value(r, 0)).strip() == "":
                 continue  # filas vacías y fila de totales
@@ -182,6 +197,7 @@ def leer_cubicol(archivos, claves: dict, grado_por_codigo: dict, ruta_equivalenc
                     "tipo": TIPO,
                     "componente": COMPONENTE,
                     "nota": nota,
+                    "competencias": [(nombre_c, v) for nombre_c, c in grupos if (v := _numero(hoja.cell_value(r, c))) is not None],
                     "fuente": "CUBICOL",
                     "confianza": "alta",
                     "validada": 1,

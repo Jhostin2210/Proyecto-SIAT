@@ -118,6 +118,7 @@ export interface Modelo {
   aplicacion_colegio: null | {
     fecha: string;
     como: string;
+    criterio?: string;
     casos: number;
     estudiantes: number;
     les_fue_mal: number;

@@ -103,6 +103,24 @@ notas = Table(
     CheckConstraint(_en("confianza", ("alta", "media")), name="chk_confianza"),
 )
 
+# Promedio de cada competencia del curso en el mes, tal como lo trae el registro auxiliar de Cubicol.
+# El promedio final del curso se guarda después de la recuperación y nunca baja de 11; el de cada
+# competencia sí. Sirve para validar el modelo: «le fue mal» si alguna competencia del mes siguiente
+# es menor de 11 (SC-14, 15/11/2026).
+competencias = Table(
+    "competencias",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("estudiante_id", Integer, ForeignKey("estudiantes.id", ondelete="CASCADE"), nullable=False),
+    Column("curso_id", Integer, ForeignKey("cursos.id", ondelete="CASCADE"), nullable=False),
+    Column("periodo_id", Integer, ForeignKey("periodos.id", ondelete="CASCADE"), nullable=False),
+    Column("competencia", String(120), nullable=False),
+    Column("nota", Float, nullable=False),
+    Column("carga_id", Integer, ForeignKey("cargas.id")),
+    UniqueConstraint("estudiante_id", "curso_id", "periodo_id", "competencia", name="uq_competencia"),
+    CheckConstraint("nota >= 0 AND nota <= 20", name="chk_competencia_rango"),
+)
+
 # Perfil del estudiante: lo que el modelo usa además de las notas (historial, familia y hábitos).
 # Los valores usan los códigos de la base con que se entrenó el modelo; etl/perfil.py los describe.
 perfiles = Table(

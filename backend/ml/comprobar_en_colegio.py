@@ -10,6 +10,10 @@ El modelo no se entrena con estos datos: solo se le aplican. Para cada estudiant
 el nivel que dio el modelo en un periodo y se compara con lo que pasó en el periodo siguiente
 (si la nota del curso fue menor de 11).
 
+Criterio desde el 15/11/2026 (SC-14): Cubicol guarda el promedio del curso después de la recuperación,
+que nunca baja de 11. Por eso «le fue mal» se mide por competencias: si alguna competencia del curso
+tuvo promedio menor de 11 en el periodo siguiente. Si no hay datos por competencia, se usa la nota.
+
 Salida: data/aplicacion_colegio.json, con cifras agregadas y sin datos de ningún estudiante.
 """
 
@@ -17,13 +21,15 @@ import json
 import os
 import sys
 
+import pandas as pd
 from sklearn.metrics import roc_auc_score
+from sqlalchemy import func, select
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from etl.database import engine
 from etl.informe import ALTO, BAJO, MEDIO
-from etl.modelo_datos import cargas
+from etl.modelo_datos import cargas, competencias, cursos, periodos
 from etl.riesgo import calcular_riesgo, evaluar_cursos
 from etl.variables import NOTA_APROBATORIA
 from etl.hora import ahora
@@ -51,8 +57,25 @@ def main():
         sys.exit("La base no tiene datos reales del colegio: la comprobación no se hace con datos de práctica.")
     resumen = calcular_riesgo(engine)
     casos, origen = evaluar_cursos(engine)
+    # Peor competencia de cada estudiante, curso y periodo; se compara la del periodo siguiente.
+    with engine.connect() as cx:
+        peor = pd.DataFrame(
+            cx.execute(
+                select(competencias.c.estudiante_id, cursos.c.nombre, periodos.c.codigo, func.min(competencias.c.nota))
+                .select_from(competencias.join(cursos).join(periodos))
+                .group_by(competencias.c.estudiante_id, cursos.c.nombre, periodos.c.codigo)
+            ).all(),
+            columns=["est", "curso", "periodo", "peor"],
+        )
+    casos = casos.sort_values(["est", "curso", "orden"]).merge(peor, on=["est", "curso", "periodo"], how="left")
+    casos["peor_siguiente"] = casos.groupby(["est", "curso"])["peor"].shift(-1)
     d = casos.dropna(subset=["nota_siguiente"]).copy()
-    d["mal"] = (d["nota_siguiente"] < NOTA_APROBATORIA).astype(int)
+    con_competencias = d["peor_siguiente"].notna()
+    d["mal"] = ((con_competencias & (d["peor_siguiente"] < NOTA_APROBATORIA)) | (~con_competencias & (d["nota_siguiente"] < NOTA_APROBATORIA))).astype(int)
+    criterio = (
+        "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); "
+        f"en {int((~con_competencias).sum())} de {len(d)} casos sin datos por competencia se usa la nota del curso"
+    )
     niveles = {}
     for clave, nivel in (("alto", ALTO), ("medio", MEDIO), ("bajo", BAJO)):
         g = d[d["nivel"] == nivel]
@@ -60,7 +83,9 @@ def main():
     reporte = {
         "fecha": ahora().strftime("%Y-%m-%d %H:%M"),
         "version_modelo": origen["version"],
-        "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con la nota del curso en el periodo siguiente.",
+        "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con lo que pasó en el periodo siguiente.",
+        "criterio": criterio,
+        "casos_por_competencia": int(con_competencias.sum()),
         "casos": int(len(d)),
         "estudiantes": int(d["est"].nunique()),
         "les_fue_mal": int(d["mal"].sum()),
