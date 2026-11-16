@@ -1,5 +1,5 @@
 {
- "fecha": "2026-11-15 18:06",
+ "fecha": "2026-11-15 21:24",
  "version": "cortes_20261115",
  "umbrales": {
   "medio": 0.0254,
@@ -15,7 +15,7 @@
   "alto": "el corte más bajo con el que al menos el 45 % de las alertas acierta en el ajuste (10 alertas o más)",
   "regla_simple": "alertar si la nota actual del curso es 16 o menos (corte elegido con la misma meta de detección)"
  },
- "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 550 casos sin datos por competencia se usa la nota del curso",
+ "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 672 casos sin datos por competencia se usa la nota del curso",
  "ajuste": {
   "casos": 268,
   "casos_con_dificultad": 48,
@@ -51,37 +51,37 @@
   }
  },
  "prueba": {
-  "casos": 282,
-  "casos_con_dificultad": 70,
-  "auc_modelo": 0.706,
-  "auc_regla_simple": 0.713,
+  "casos": 404,
+  "casos_con_dificultad": 79,
+  "auc_modelo": 0.704,
+  "auc_regla_simple": 0.698,
   "modelo_medio_y_alto": {
-   "alertas": 155,
-   "detecta": 0.8,
-   "aciertos": 0.361,
-   "verdaderos_positivos": 56,
-   "casos_con_dificultad": 70
+   "alertas": 216,
+   "detecta": 0.785,
+   "aciertos": 0.287,
+   "verdaderos_positivos": 62,
+   "casos_con_dificultad": 79
   },
   "modelo_solo_alto": {
-   "alertas": 29,
-   "detecta": 0.171,
-   "aciertos": 0.414,
-   "verdaderos_positivos": 12,
-   "casos_con_dificultad": 70
+   "alertas": 34,
+   "detecta": 0.177,
+   "aciertos": 0.412,
+   "verdaderos_positivos": 14,
+   "casos_con_dificultad": 79
   },
   "regla_simple": {
-   "alertas": 198,
-   "detecta": 0.914,
-   "aciertos": 0.323,
-   "verdaderos_positivos": 64,
-   "casos_con_dificultad": 70
+   "alertas": 293,
+   "detecta": 0.911,
+   "aciertos": 0.246,
+   "verdaderos_positivos": 72,
+   "casos_con_dificultad": 79
   },
   "cortes_anteriores_medio_y_alto": {
-   "alertas": 71,
-   "detecta": 0.429,
-   "aciertos": 0.423,
-   "verdaderos_positivos": 30,
-   "casos_con_dificultad": 70
+   "alertas": 85,
+   "detecta": 0.405,
+   "aciertos": 0.376,
+   "verdaderos_positivos": 32,
+   "casos_con_dificultad": 79
   }
  }
 }

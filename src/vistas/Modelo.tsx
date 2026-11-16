@@ -328,7 +328,7 @@ export default function Modelo() {
               </table>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              AUC en esos meses: modelo {n2(m.cortes_colegio.prueba.auc_modelo)}, regla simple {n2(m.cortes_colegio.prueba.auc_regla_simple)}. El modelo todavía no ordena mejor que la regla simple: su ventaja es acertar algo más en cada alerta. Superarla es la meta del Sprint 3.
+              AUC en esos meses: modelo {n2(m.cortes_colegio.prueba.auc_modelo)}, regla simple {n2(m.cortes_colegio.prueba.auc_regla_simple)}. El modelo todavía no ordena claramente mejor que la regla simple (AUC casi igual): su ventaja es acertar algo más en cada alerta. Superarla es la meta del Sprint 3.
             </p>
           </div>
         </Tarjeta>

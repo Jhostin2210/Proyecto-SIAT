@@ -146,12 +146,12 @@ erDiagram
 | `matriculas` | Año, nivel y grado de cada estudiante (cambia cada año). | 50 |
 | `cursos` | Catálogo de cursos con su área. | 7 |
 | `periodos` | Meses del año escolar, ordenados. | 6 (marzo a agosto de 2026) |
-| `notas` | Promedio de cada curso en cada mes, con su fuente y su carga. | 684 |
-| `competencias` | Promedio de cada competencia del curso en el mes (SC-14). | 2 475 |
-| `cargas` | Bitácora de cada carga de datos: archivos, filas, notas cargadas, repetidas y rechazadas. | 4 |
+| `notas` | Promedio de cada curso en cada mes, con su fuente y su carga. | 807 |
+| `competencias` | Promedio de cada competencia del curso en el mes (SC-14). | 2 892 |
+| `cargas` | Bitácora de cada carga de datos: archivos, filas, notas cargadas, repetidas y rechazadas. | 5 |
 | `calidad_datos` | Resultado de cada regla en cada ejecución de la validación. | 40 |
 | `perfiles` | Variables del modelo que no son notas. | 50 |
-| `predicciones` | Nivel de riesgo y probabilidad de cada estudiante en su último periodo. | 48 |
+| `predicciones` | Nivel de riesgo y probabilidad de cada estudiante en su último periodo. | 49 |
 | `alertas` | Alertas generadas a partir de las predicciones (Sprint 4). | 0 |
 | `asistencia` | Inasistencias por periodo (sin datos digitales todavía). | 0 |
 | `incidencias` | Incidencias de conducta (sin datos digitales todavía). | 0 |

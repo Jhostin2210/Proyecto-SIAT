@@ -1,54 +1,54 @@
 {
- "fecha": "2026-11-15 18:06",
+ "fecha": "2026-11-15 21:23",
  "version_modelo": "red_neuronal_20261010+cortes_20261115",
  "como": "El modelo no se entrenó con estos datos. Se compara el nivel que dio en un periodo con lo que pasó en el periodo siguiente.",
- "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 550 casos sin datos por competencia se usa la nota del curso",
- "casos_por_competencia": 523,
- "casos": 550,
- "estudiantes": 48,
- "les_fue_mal": 118,
- "proporcion": 0.215,
- "auc_roc": 0.713,
+ "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 672 casos sin datos por competencia se usa la nota del curso",
+ "casos_por_competencia": 645,
+ "casos": 672,
+ "estudiantes": 49,
+ "les_fue_mal": 127,
+ "proporcion": 0.189,
+ "auc_roc": 0.708,
  "niveles": {
   "alto": {
-   "casos": 49,
-   "les_fue_mal": 21
+   "casos": 54,
+   "les_fue_mal": 23
   },
   "medio": {
-   "casos": 236,
-   "les_fue_mal": 71
+   "casos": 292,
+   "les_fue_mal": 75
   },
   "bajo": {
-   "casos": 265,
-   "les_fue_mal": 26
+   "casos": 326,
+   "les_fue_mal": 29
   }
  },
  "alerta_solo_alto": {
   "matriz": {
-   "verdaderos_negativos": 404,
-   "falsos_positivos": 28,
-   "falsos_negativos": 97,
-   "verdaderos_positivos": 21
+   "verdaderos_negativos": 514,
+   "falsos_positivos": 31,
+   "falsos_negativos": 104,
+   "verdaderos_positivos": 23
   },
-  "exactitud": 0.773,
-  "detecta": 0.178,
-  "aciertos": 0.429
+  "exactitud": 0.799,
+  "detecta": 0.181,
+  "aciertos": 0.426
  },
  "alerta_medio_y_alto": {
   "matriz": {
-   "verdaderos_negativos": 239,
-   "falsos_positivos": 193,
-   "falsos_negativos": 26,
-   "verdaderos_positivos": 92
+   "verdaderos_negativos": 297,
+   "falsos_positivos": 248,
+   "falsos_negativos": 29,
+   "verdaderos_positivos": 98
   },
-  "exactitud": 0.602,
-  "detecta": 0.78,
-  "aciertos": 0.323
+  "exactitud": 0.588,
+  "detecta": 0.772,
+  "aciertos": 0.283
  },
- "exactitud_sin_modelo": 0.785,
+ "exactitud_sin_modelo": 0.811,
  "estudiantes_por_nivel": {
-  "Riesgo bajo": 18,
-  "Riesgo medio": 20,
+  "Riesgo bajo": 14,
+  "Riesgo medio": 25,
   "Riesgo alto": 10
  }
 }
