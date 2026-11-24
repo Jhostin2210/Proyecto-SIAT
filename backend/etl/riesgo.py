@@ -16,7 +16,7 @@ import pandas as pd
 from sqlalchemy import delete, insert, select
 
 from etl.informe import ALTO, BAJO, MEDIO, armar_informe, nivel_de
-from etl.modelo_datos import cargas, clasificaciones, crear_tablas, periodos, predicciones
+from etl.modelo_datos import cargas, clasificaciones, crear_tablas, periodos, predicciones, retiros
 from etl.perfil import completar_perfiles, leer_perfiles
 from etl.variables import entradas_del_modelo, leer_notas, rendimiento_por_curso
 from etl.hora import ahora
@@ -80,8 +80,16 @@ def cursos_del_periodo(grupo: pd.DataFrame) -> list:
     ]
 
 
+def retirados(engine) -> set:
+    """Ids de los estudiantes que dejaron el colegio (tabla «retiros»)."""
+    crear_tablas(engine)
+    with engine.connect() as cx:
+        return {fila[0] for fila in cx.execute(select(retiros.c.estudiante_id))}
+
+
 def informes(engine, nombres: dict = None, periodo: str = None, casos_y_origen: tuple = None) -> tuple:
-    """Informe de cada estudiante en su último periodo, o en el periodo indicado. Devuelve ({id: informe}, origen)."""
+    """Informe de cada estudiante en su último periodo, o en el periodo indicado. Devuelve ({id: informe}, origen).
+    Sin periodo (clasificación actual) no se incluye a quienes dejaron el colegio; en los meses pasados sí cuentan."""
     casos, origen = casos_y_origen or evaluar_cursos(engine)
     if casos.empty:
         return {}, origen
@@ -89,6 +97,7 @@ def informes(engine, nombres: dict = None, periodo: str = None, casos_y_origen: 
         actuales = casos[casos["periodo"] == periodo]
     else:
         actuales = casos[casos["orden"] == casos.groupby("est")["orden"].transform("max")]
+        actuales = actuales[~actuales["est"].isin(retirados(engine))]
     resultado = {}
     for est, grupo in actuales.groupby("est"):
         primero = grupo.iloc[0]

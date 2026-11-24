@@ -195,6 +195,20 @@ incidencias = Table(
 )
 
 # Nivel de riesgo general por estudiante y periodo. «probabilidad» es el promedio de sus cursos.
+# Estudiantes que dejaron el colegio (traslado o retiro). Sus notas se conservan, pero no se clasifican en el
+# periodo actual. Se registran con etl/registrar_retiro.py y solo con confirmación del Product Owner.
+retiros = Table(
+    "retiros",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("estudiante_id", Integer, ForeignKey("estudiantes.id", ondelete="CASCADE"), nullable=False, unique=True),
+    Column("motivo", String(30), nullable=False),  # 'traslado' o 'retiro'
+    Column("ultimo_periodo", String(7)),  # 'AAAA-MM' si se conoce
+    Column("confirmado_por", String(60), nullable=False),
+    Column("fecha", DateTime, nullable=False),
+    CheckConstraint(_en("motivo", ("traslado", "retiro")), name="chk_motivo_retiro"),
+)
+
 predicciones = Table(
     "predicciones",
     metadata,

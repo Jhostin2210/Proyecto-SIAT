@@ -1,6 +1,6 @@
 # Modelo entidad-relación de la base de datos
 
-Actividad A-2.1.1.2 del cronograma (paquete 1.2.1, entregable E-01). El diagrama sale de la definición de las tablas en `backend/etl/modelo_datos.py`, que sirve igual para PostgreSQL (producción) y SQLite (pruebas locales). Versión del 15/11/2026, con la tabla `competencias` (SC-14). Este documento no contiene datos de ningún estudiante.
+Actividad A-2.1.1.2 del cronograma (paquete 1.2.1, entregable E-01). El diagrama sale de la definición de las tablas en `backend/etl/modelo_datos.py`, que sirve igual para PostgreSQL (producción) y SQLite (pruebas locales). Versión del 24/11/2026, con las tablas `competencias` (SC-14) y `retiros`. Este documento no contiene datos de ningún estudiante.
 
 ## Diagrama
 
@@ -11,6 +11,7 @@ erDiagram
     estudiantes ||--o{ competencias : "obtiene"
     estudiantes ||--o| perfiles : "tiene"
     estudiantes ||--o{ predicciones : "recibe"
+    estudiantes ||--o| retiros : "deja el colegio"
     estudiantes ||--o{ asistencia : "registra"
     estudiantes ||--o{ incidencias : "registra"
     cursos ||--o{ notas : "califica"
@@ -89,6 +90,14 @@ erDiagram
         string variables "25 variables del modelo"
         string origen
     }
+    retiros {
+        int id PK
+        int estudiante_id FK "único"
+        string motivo "traslado o retiro"
+        string ultimo_periodo "AAAA-MM, si se conoce"
+        string confirmado_por
+        datetime fecha
+    }
     predicciones {
         int id PK
         int estudiante_id FK
@@ -140,18 +149,20 @@ erDiagram
 
 ## Tablas
 
-| Tabla | Para qué | Filas en la base real al 15/11/2026 |
+| Tabla | Para qué | Filas en la base real al 24/11/2026 |
 |---|---|---|
-| `estudiantes` | Un registro por estudiante con su código único. Los nombres solo existen en la base privada. | 50 |
-| `matriculas` | Año, nivel y grado de cada estudiante (cambia cada año). | 50 |
-| `cursos` | Catálogo de cursos con su área. | 7 |
+| `estudiantes` | Un registro por estudiante con su código único. Los nombres solo existen en la base privada. | 61 |
+| `matriculas` | Año, nivel y grado de cada estudiante (cambia cada año). | 61 |
+| `cursos` | Catálogo de cursos con su área. | 12 |
 | `periodos` | Meses del año escolar, ordenados. | 6 (marzo a agosto de 2026) |
-| `notas` | Promedio de cada curso en cada mes, con su fuente y su carga. | 807 |
-| `competencias` | Promedio de cada competencia del curso en el mes (SC-14). | 2 892 |
-| `cargas` | Bitácora de cada carga de datos: archivos, filas, notas cargadas, repetidas y rechazadas. | 5 |
+| `notas` | Promedio de cada curso en cada mes, con su fuente y su carga. | 1 665 |
+| `competencias` | Promedio de cada competencia del curso en el mes (SC-14). | 5 431 |
+| `cargas` | Bitácora de cada carga de datos: archivos, filas, notas cargadas, repetidas y rechazadas. | 6 |
 | `calidad_datos` | Resultado de cada regla en cada ejecución de la validación. | 40 |
-| `perfiles` | Variables del modelo que no son notas. | 50 |
-| `predicciones` | Nivel de riesgo y probabilidad de cada estudiante en su último periodo. | 49 |
+| `perfiles` | Variables del modelo que no son notas. | 61 |
+| `predicciones` | Nivel de riesgo y probabilidad de cada estudiante en su último periodo. | 60 |
+| `retiros` | Estudiantes que dejaron el colegio, confirmados por el Product Owner: conservan sus notas, pero no se clasifican en el periodo actual. | 1 |
+| `clasificaciones` | Bitácora de cada clasificación: fecha, motivo, versión y cuántos estudiantes hay en cada nivel. | 9 |
 | `alertas` | Alertas generadas a partir de las predicciones (Sprint 4). | 0 |
 | `asistencia` | Inasistencias por periodo (sin datos digitales todavía). | 0 |
 | `incidencias` | Incidencias de conducta (sin datos digitales todavía). | 0 |
@@ -161,4 +172,4 @@ erDiagram
 
 - Un estudiante no puede tener dos notas del mismo curso, periodo, tipo y componente (`uq_nota`), ni dos promedios de la misma competencia en el mismo curso y periodo (`uq_competencia`).
 - Las notas y competencias van de 0 a 20; los componentes, tipos de evaluación y niveles de riesgo solo aceptan los valores del catálogo.
-- Al borrar un estudiante se borran sus notas, competencias, matrículas, perfil y predicciones (borrado en cascada).
+- Al borrar un estudiante se borran sus notas, competencias, matrículas, perfil, predicciones y retiro (borrado en cascada). Un estudiante tiene a lo sumo un retiro (`unique`).

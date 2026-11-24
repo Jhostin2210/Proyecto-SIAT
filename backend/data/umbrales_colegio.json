@@ -1,6 +1,8 @@
 {
- "fecha": "2026-11-15 21:24",
+ "fecha": "2026-11-24 14:52",
  "version": "cortes_20261115",
+ "fecha_ajuste": "2026-11-15 21:24",
+ "medicion": "cortes vigentes, medidos de nuevo con los datos actuales",
  "umbrales": {
   "medio": 0.0254,
   "alto": 0.0854
@@ -15,16 +17,16 @@
   "alto": "el corte más bajo con el que al menos el 45 % de las alertas acierta en el ajuste (10 alertas o más)",
   "regla_simple": "alertar si la nota actual del curso es 16 o menos (corte elegido con la misma meta de detección)"
  },
- "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 672 casos sin datos por competencia se usa la nota del curso",
+ "criterio": "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); en 27 de 1175 casos sin datos por competencia se usa la nota del curso; sin Educación Física ni Arte y Cultura (SC-16)",
  "ajuste": {
-  "casos": 268,
+  "casos": 472,
   "casos_con_dificultad": 48,
-  "auc_modelo": 0.714,
-  "auc_regla_simple": 0.711,
+  "auc_modelo": 0.781,
+  "auc_regla_simple": 0.767,
   "modelo_medio_y_alto": {
-   "alertas": 130,
+   "alertas": 170,
    "detecta": 0.75,
-   "aciertos": 0.277,
+   "aciertos": 0.212,
    "verdaderos_positivos": 36,
    "casos_con_dificultad": 48
   },
@@ -36,29 +38,29 @@
    "casos_con_dificultad": 48
   },
   "regla_simple": {
-   "alertas": 153,
+   "alertas": 236,
    "detecta": 0.812,
-   "aciertos": 0.255,
+   "aciertos": 0.165,
    "verdaderos_positivos": 39,
    "casos_con_dificultad": 48
   },
   "cortes_anteriores_medio_y_alto": {
-   "alertas": 50,
+   "alertas": 56,
    "detecta": 0.333,
-   "aciertos": 0.32,
+   "aciertos": 0.286,
    "verdaderos_positivos": 16,
    "casos_con_dificultad": 48
   }
  },
  "prueba": {
-  "casos": 404,
+  "casos": 703,
   "casos_con_dificultad": 79,
-  "auc_modelo": 0.704,
-  "auc_regla_simple": 0.698,
+  "auc_modelo": 0.785,
+  "auc_regla_simple": 0.789,
   "modelo_medio_y_alto": {
-   "alertas": 216,
+   "alertas": 273,
    "detecta": 0.785,
-   "aciertos": 0.287,
+   "aciertos": 0.227,
    "verdaderos_positivos": 62,
    "casos_con_dificultad": 79
   },
@@ -70,16 +72,16 @@
    "casos_con_dificultad": 79
   },
   "regla_simple": {
-   "alertas": 293,
+   "alertas": 401,
    "detecta": 0.911,
-   "aciertos": 0.246,
+   "aciertos": 0.18,
    "verdaderos_positivos": 72,
    "casos_con_dificultad": 79
   },
   "cortes_anteriores_medio_y_alto": {
-   "alertas": 85,
+   "alertas": 94,
    "detecta": 0.405,
-   "aciertos": 0.376,
+   "aciertos": 0.34,
    "verdaderos_positivos": 32,
    "casos_con_dificultad": 79
   }

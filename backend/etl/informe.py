@@ -14,6 +14,10 @@ ALTO, MEDIO, BAJO = "Riesgo alto", "Riesgo medio", "Riesgo bajo"
 ORDEN = {BAJO: 0, MEDIO: 1, ALTO: 2}
 CAIDA_FUERTE = 2  # puntos que baja la nota de un periodo al siguiente
 BRECHA_EXAMEN = 3  # puntos en que el examen queda por debajo de los trabajos
+# SC-16 (aprobada por el Product Owner el 24/11/2026): estos cursos se guardan y se muestran, pero no cuentan
+# en el nivel general ni en la comprobación del modelo. Sus notas casi siempre son altas y bajaban el promedio de
+# riesgo de estudiantes con dificultad en los cursos académicos.
+AREAS_SIN_PESO = {"Educación Física", "Arte y Cultura"}
 
 
 def nivel_de(probabilidad: float, umbrales: dict) -> str:
@@ -23,7 +27,9 @@ def nivel_de(probabilidad: float, umbrales: dict) -> str:
 def nivel_general(cursos: list, umbrales: dict):
     """Riesgo general del estudiante: (nivel, probabilidad).
     La probabilidad es el promedio de sus cursos. Un curso en riesgo alto basta para que el estudiante
-    esté en riesgo alto: es el caso en que el colegio debe actuar aunque los demás cursos vayan bien."""
+    esté en riesgo alto: es el caso en que el colegio debe actuar aunque los demás cursos vayan bien.
+    No cuentan los cursos de AREAS_SIN_PESO (SC-16), salvo que el estudiante solo tenga esos."""
+    cursos = [c for c in cursos if c.get("area") not in AREAS_SIN_PESO] or cursos
     probabilidad = sum(c["probabilidad"] for c in cursos) / len(cursos)
     nivel = nivel_de(probabilidad, umbrales)
     if any(c["nivel"] == ALTO for c in cursos):

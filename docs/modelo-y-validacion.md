@@ -88,7 +88,7 @@ No es un corte por nota: los demás datos del estudiante pueden moverlo de nivel
 
 En el colegio se aprueba con 11 y en la base pública con 10, así que a las notas del colegio se les resta un punto antes de pasarlas a la red. La nota del curso es el promedio del examen y de los trabajos del periodo. Si no hay periodo anterior, se toma la misma nota actual. La red se entrenó con estudiantes de 15 a 22 años; la edad se lleva a ese rango.
 
-**Riesgo general del estudiante.** Se juntan sus cursos: la probabilidad general es el promedio de sus cursos, y basta un curso en riesgo alto para que el estudiante quede en riesgo alto. `backend/etl/informe.py` reconoce además el patrón (un curso o varios, exámenes frente a trabajos, caída reciente), propone acciones y redacta el comunicado al apoderado.
+**Riesgo general del estudiante.** Se juntan sus cursos: la probabilidad general es el promedio de sus cursos, y basta un curso en riesgo alto para que el estudiante quede en riesgo alto. Desde el 24/11/2026 (SC-16, aprobada por el Product Owner) Educación Física y Arte y Cultura se guardan y se muestran, pero no cuentan en el nivel general ni en la comprobación del modelo: sus notas casi siempre son altas y bajaban el promedio de estudiantes con dificultad en los cursos académicos. Los estudiantes que dejaron el colegio (tabla `retiros`, solo con confirmación del Product Owner) conservan sus notas, pero no se clasifican en el periodo actual. `backend/etl/informe.py` reconoce además el patrón (un curso o varios, exámenes frente a trabajos, caída reciente), propone acciones y redacta el comunicado al apoderado.
 
 ## 7. Aplicación en el colegio
 
@@ -96,7 +96,7 @@ En el colegio se aprueba con 11 y en la base pública con 10, así que a las not
 
 **Criterio vigente (SC-14, aprobada por el Product Owner el 15/11/2026).** Cubicol guarda el promedio del curso después de la recuperación, que nunca baja de 11. Por eso «le fue mal» se mide por competencias: si alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente. El registro auxiliar trae el promedio de cada competencia y el sistema lo guarda en la tabla `competencias` (2 892 promedios, 151 menores de 11). En 27 casos sin datos por competencia se usa la nota del curso.
 
-**Con la base de Cubicol (seis meses, de marzo a agosto de 2026, con la carga 4 del 15/11/2026):** 672 casos de 49 estudiantes; en 127 (18,9 %) alguna competencia del periodo siguiente salió desaprobada. AUC en el colegio: 0,71.
+**Con la base de Cubicol (seis meses, de marzo a agosto de 2026, con la carga 5 del 24/11/2026 y la SC-16):** 1 175 casos de 60 estudiantes; en 127 (10,8 %) alguna competencia del periodo siguiente salió desaprobada. AUC en el colegio: 0,78. La carga 5 sumó 1.° a 5.° de secundaria con Física Elemental, Química, Ciencia y Tecnología y Economía, cursos en los que ninguna competencia salió desaprobada: suman muchos casos fáciles de ordenar, por eso el AUC sube de 0,71 a 0,78 sin que el modelo haya mejorado. La comparación que vale es con la regla simple (abajo).
 
 Con los cortes de la base pública (medio desde 0,050 y alto desde 0,689), antes de la carga 4, la red detectaba solo 46 de 118 casos (39 %) y nunca daba riesgo alto. Por eso el 15/11/2026 se ajustaron los cortes con los datos del colegio (ver «Cortes ajustados»).
 
@@ -104,18 +104,20 @@ Con los cortes de la base pública (medio desde 0,050 y alto desde 0,689), antes
 
 `python -m ml.ajustar_cortes`. La red **no se vuelve a entrenar**: solo se eligen los dos cortes que llevan su probabilidad a los niveles. Para no medir con los mismos datos del ajuste, los cortes se eligen con los casos de **marzo y abril** y el resultado se mide con los de **mayo a agosto**, que el ajuste no vio. Reglas fijadas antes de mirar la prueba: el corte medio es el más alto que detecta al menos el 75 % de los casos con dificultad (meta del proyecto); el corte alto, el más bajo con el que al menos el 45 % de las alertas acierta. Resultado: **medio desde 0.025 y alto desde 0.085** (`data/umbrales_colegio.json`). Solo se aplican a los datos reales; los datos de práctica conservan los cortes de la base pública.
 
-Con los meses que el ajuste no vio (404 casos, 79 con dificultad; cifras actualizadas tras la carga 4 del 15/11/2026, con los mismos cortes):
+Con los meses que el ajuste no vio (703 casos, 79 con dificultad; medidos de nuevo el 24/11/2026 con `python -m ml.ajustar_cortes --medir`, tras la carga 5 y la SC-16, **con los mismos cortes**):
 
 | Si se alerta… | Alertas | Detecta | Aciertos |
 |---|---|---|---|
-| Cortes anteriores, medio y alto | 85 | 41 % | 38 % |
-| **Cortes ajustados, medio y alto** | 216 | **79 %** | 29 % |
+| Cortes anteriores, medio y alto | 94 | 41 % | 34 % |
+| **Cortes ajustados, medio y alto** | 273 | **79 %** | 23 % |
 | Cortes ajustados, solo alto | 34 | 18 % | 41 % |
-| Regla simple: la nota actual del curso es 16 o menos (corte elegido con la misma meta de detección) | 293 | 91 % | 25 % |
+| Regla simple: la nota actual del curso es 16 o menos (corte elegido con la misma meta de detección) | 401 | 91 % | 18 % |
 
-AUC en esos meses: red 0,704, regla simple 0,698.
+AUC en esos meses: red 0,785, regla simple 0,789.
 
-**Lectura.** Con los cortes ajustados la detección pasa de 41 % a 79 % en meses que el ajuste no vio, y cumple la meta del 75 %. Pero la red **todavía no ordena claramente mejor que una regla simple** por nota (AUC casi igual): su ventaja es acertar algo más en cada alerta con menos alertas. Superar a la regla simple es la meta del Sprint 3 (por ejemplo, usando las competencias como variables). Con los cortes ajustados, al 15/11/2026, tras la carga 4, hay 10 estudiantes en riesgo alto, 25 en medio y 14 en bajo.
+Con los datos de la carga 5, volver a ajustar bajaría el corte alto de 0,085 a 0,080. Se decidió **no cambiar los cortes** (Product Owner, 24/11/2026): se conservan los del 15/11/2026 y solo se vuelven a medir.
+
+**Lectura.** Con los cortes ajustados la detección pasa de 41 % a 79 % en meses que el ajuste no vio, y cumple la meta del 75 %. Pero la red **todavía no ordena claramente mejor que una regla simple** por nota (AUC casi igual): su ventaja es acertar algo más en cada alerta con menos alertas. Superar a la regla simple es la meta del Sprint 3 (por ejemplo, usando las competencias como variables). Con los cortes ajustados, al 24/11/2026, tras la carga 5 y la SC-16, hay 11 estudiantes en riesgo alto, 18 en medio y 31 en bajo (60 clasificados; uno trasladado no se clasifica).
 
 Con la base anterior (consolidado y fotografías, hasta el 13/11/2026) eran 558 casos de 146 estudiantes; en 44 (7,9 %) la nota del periodo siguiente fue desaprobatoria.
 

@@ -28,7 +28,7 @@ from sqlalchemy import func, select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from etl.database import engine
-from etl.informe import ALTO, BAJO, MEDIO
+from etl.informe import ALTO, AREAS_SIN_PESO, BAJO, MEDIO
 from etl.modelo_datos import cargas, competencias, cursos, periodos
 from etl.riesgo import calcular_riesgo, evaluar_cursos
 from etl.variables import NOTA_APROBATORIA
@@ -67,12 +67,14 @@ def casos_con_resultado(engine) -> tuple:
         )
     casos = casos.sort_values(["est", "curso", "orden"]).merge(peor, on=["est", "curso", "periodo"], how="left")
     casos["peor_siguiente"] = casos.groupby(["est", "curso"])["peor"].shift(-1)
-    d = casos.dropna(subset=["nota_siguiente"]).copy()
+    # SC-16: los cursos de AREAS_SIN_PESO no entran en la comprobación (tampoco cuentan en el nivel general).
+    d = casos[~casos["area"].isin(AREAS_SIN_PESO)].dropna(subset=["nota_siguiente"]).copy()
     con_competencias = d["peor_siguiente"].notna()
     d["mal"] = ((con_competencias & (d["peor_siguiente"] < NOTA_APROBATORIA)) | (~con_competencias & (d["nota_siguiente"] < NOTA_APROBATORIA))).astype(int)
     criterio = (
         "alguna competencia del curso tuvo promedio menor de 11 en el periodo siguiente (SC-14); "
-        f"en {int((~con_competencias).sum())} de {len(d)} casos sin datos por competencia se usa la nota del curso"
+        f"en {int((~con_competencias).sum())} de {len(d)} casos sin datos por competencia se usa la nota del curso; "
+        "sin Educación Física ni Arte y Cultura (SC-16)"
     )
     return d, origen, criterio, con_competencias
 

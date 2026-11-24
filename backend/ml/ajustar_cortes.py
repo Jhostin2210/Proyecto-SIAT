@@ -4,7 +4,8 @@ SIA-T: ajuste de los cortes de nivel del modelo con los datos del colegio (paque
 Uso, desde la carpeta backend, con la base de datos reales:
 
     $env:SQLITE_PATH = "data/privado/sia_t_reales.db"
-    python -m ml.ajustar_cortes
+    python -m ml.ajustar_cortes            # ajusta los cortes (cambia la configuración: requiere aprobación)
+    python -m ml.ajustar_cortes --medir    # conserva los cortes vigentes y solo vuelve a medir con los datos nuevos
 
 La red neuronal no se vuelve a entrenar: solo se eligen los dos cortes que llevan su probabilidad a los
 niveles medio y alto. Para no medir con los mismos datos con que se ajusta:
@@ -67,14 +68,29 @@ def _corte_acierto(puntaje, y):
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
+    medir = "--medir" in sys.argv[1:]
+    vigente = None
     if os.path.exists(RUTA):
-        os.remove(RUTA)  # se ajusta siempre sobre la probabilidad de la red, no sobre cortes anteriores
-    d, origen, criterio, _ = casos_con_resultado(engine)
+        with open(RUTA, encoding="utf-8") as f:
+            vigente = json.load(f)
+        os.remove(RUTA)  # se mide siempre sobre la probabilidad de la red, no sobre cortes anteriores
+    if medir and not vigente:
+        sys.exit("No hay cortes vigentes que medir: ejecute primero el ajuste.")
+    try:
+        d, origen, criterio, _ = casos_con_resultado(engine)
+    except BaseException:
+        if vigente:
+            with open(RUTA, "w", encoding="utf-8") as f:
+                json.dump(vigente, f, ensure_ascii=False, indent=1)
+        raise
     ajuste, prueba = d[d["periodo"] <= FIN_AJUSTE], d[d["periodo"] > FIN_AJUSTE]
     y_a, y_p = ajuste["mal"].values, prueba["mal"].values
 
-    medio = _corte_deteccion(ajuste["probabilidad"].values, y_a)
-    alto = _corte_acierto(ajuste["probabilidad"].values, y_a)
+    if medir:
+        medio, alto = vigente["umbrales"]["medio"], vigente["umbrales"]["alto"]
+    else:
+        medio = _corte_deteccion(ajuste["probabilidad"].values, y_a)
+        alto = _corte_acierto(ajuste["probabilidad"].values, y_a)
     # La regla simple usa la nota actual: más baja, más riesgo (puntaje = −nota).
     corte_nota = -_corte_deteccion(-ajuste["nota"].values, y_a)
 
@@ -93,7 +109,9 @@ def main():
 
     reporte = {
         "fecha": ahora().strftime("%Y-%m-%d %H:%M"),
-        "version": f"cortes_{ahora():%Y%m%d}",
+        "version": vigente["version"] if medir else f"cortes_{ahora():%Y%m%d}",
+        "fecha_ajuste": (vigente.get("fecha_ajuste") or vigente["fecha"]) if medir else ahora().strftime("%Y-%m-%d %H:%M"),
+        "medicion": "cortes vigentes, medidos de nuevo con los datos actuales" if medir else "cortes ajustados en esta ejecución",
         "umbrales": {"medio": round(medio, 4), "alto": round(alto, 4) if alto is not None else 1.0},
         "umbrales_anteriores": {k: round(v, 4) for k, v in origen["umbrales"].items()},
         "como": "La red no se vuelve a entrenar. Los cortes se ajustan con los casos de marzo y abril de 2026 y se miden con los de mayo a agosto, que el ajuste no vio.",
