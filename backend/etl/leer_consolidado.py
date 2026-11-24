@@ -42,6 +42,12 @@ CURSOS = [
     ("ciencia y tecnologia", "Ciencia y Tecnología", "Ciencia y Tecnología"),
     ("c. t. a", "Ciencia y Tecnología", "Ciencia y Tecnología"),  # sigla antigua (Ciencia, Tecnología y Ambiente) en Cubicol
     ("ciencia y ambiente", "Ciencia y Ambiente", "Ciencia y Tecnología"),
+    ("fisica elemental", "Física Elemental", "Ciencia y Tecnología"),  # secundaria, Cubicol (carga 5, 24/11/2026)
+    ("quimica", "Química", "Ciencia y Tecnología"),
+    ("ed. fisica", "Educación Física", "Educación Física"),  # así lo escribe Cubicol
+    ("educacion fisica", "Educación Física", "Educación Física"),
+    ("educ. artistica", "Arte y Cultura", "Arte y Cultura"),  # «EDUC. ARTISTICA» en Cubicol; área del Currículo Nacional
+    ("arte", "Arte y Cultura", "Arte y Cultura"),
 ]
 
 # Tipo de nota según la etiqueta de la columna. El orden importa: gana la primera regla que coincide.

@@ -6,10 +6,15 @@ Uso, desde la carpeta backend, con la base de datos reales:
     $env:SQLITE_PATH = "data/privado/sia_t_reales.db"
     python -m etl.cargar_cubicol "<carpeta con los .xls de Cubicol>"
     python -m etl.cargar_cubicol "<carpeta>" --como-base   # base nueva: los estudiantes salen de Cubicol
+    python -m etl.cargar_cubicol "<carpeta>" --salones-nuevos   # agrega los estudiantes de salones que aún no están
 
 Con --como-base (13/11/2026, a pedido del Product Owner) la lista de estudiantes se toma de las
 propias exportaciones y se les asigna un código nuevo. Solo funciona sobre una base vacía y sin
 data/privado/claves.csv: la base anterior se guarda antes como respaldo.
+
+Con --salones-nuevos (24/11/2026) se agregan, con código nuevo, solo los estudiantes de los salones que todavía
+no tienen a nadie en la base (por ejemplo, 4.° y 5.° de secundaria). En los salones que ya existen no se crea a
+nadie: quien no se enlace con certeza sigue yendo a la lista por revisar.
 
 Lee todos los .xls de la carpeta (y sus subcarpetas), enlaza cada estudiante con su código ya
 existente (ver etl/leer_cubicol.py), carga los promedios que aún no están en la base, anota la carga
@@ -72,8 +77,9 @@ def guardar_competencias(notas_leidas, engine, carga_id) -> int:
     return len(nuevas)
 
 
-def cargar_carpeta(carpeta, engine=engine_por_defecto, ruta_claves=RUTA_CLAVES, ruta_equivalencias=RUTA_EQUIVALENCIAS, como_base=False) -> dict:
-    archivos = [p for p in Path(carpeta).rglob("*.xls") if not p.name.startswith("~$")]
+def cargar_carpeta(carpeta, engine=engine_por_defecto, ruta_claves=RUTA_CLAVES, ruta_equivalencias=RUTA_EQUIVALENCIAS, como_base=False, salones_nuevos=False, etiqueta=None, subcarpetas=None) -> dict:
+    bases = [Path(carpeta) / s for s in subcarpetas] if subcarpetas else [Path(carpeta)]
+    archivos = [p for b in bases for p in b.rglob("*.xls") if not p.name.startswith("~$")]
     fichas = {}
     if como_base:
         crear_tablas(engine)
@@ -87,14 +93,23 @@ def cargar_carpeta(carpeta, engine=engine_por_defecto, ruta_claves=RUTA_CLAVES, 
         claves, grados, ruta_equivalencias = codigos, {c: f["matriculas"][2026][1] for c, f in fichas.items()}, None
     else:
         claves, grados = _claves(ruta_claves), _grados(engine)
+        if salones_nuevos:
+            en_base = set(grados.values())
+            por_clave = {k: f for k, f in estudiantes_de_cubicol(archivos).items() if f["matriculas"][2026][1] not in en_base}
+            if por_clave:
+                codigos = asignar_codigos(por_clave.keys(), ruta_claves)
+                fichas = {codigos[k]: f for k, f in por_clave.items()}
+                claves = _claves(ruta_claves)
+                grados.update({c: f["matriculas"][2026][1] for c, f in fichas.items()})
     leido = leer_cubicol(archivos, claves, grados, ruta_equivalencias)
     rechazadas = sum(h["cantidad"] for h in leido["hallazgos"])
-    etiqueta = f"Cubicol: {Path(carpeta).name} ({leido['archivos']} archivos){' · base nueva' if como_base else ''}"
+    etiqueta = f"Cubicol: {etiqueta or Path(carpeta).name} ({leido['archivos']} archivos){' · base nueva' if como_base else ''}"
     resumen = cargar(leido["notas"], fichas, etiqueta, "reales", leido["filas_origen"], rechazadas, engine)
     resumen["competencias"] = guardar_competencias(leido["notas"], engine, resumen["carga_id"])
     resumen.update(hallazgos=leido["hallazgos"], filas_origen=leido["filas_origen"], archivos=leido["archivos"], sin_identificar=leido["sin_identificar"])
     resumen["diferencias"] = reconciliar(leido["notas"], engine)
     resumen["estudiantes"] = len({n["codigo"] for n in leido["notas"]})
+    resumen["nuevos"] = len(fichas) if not como_base else 0
     resumen["enlaces"] = {c: len({n["codigo"] for n in leido["notas"] if n["criterio_enlace"] == c}) for c in sorted({n["criterio_enlace"] for n in leido["notas"]})}
     # Lista privada para revisar a mano los estudiantes que no se pudieron enlazar.
     with open(RUTA_POR_REVISAR, "w", newline="", encoding="utf-8") as f:
@@ -108,10 +123,15 @@ def main():
     parser = argparse.ArgumentParser(description="Carga a SIA-T las exportaciones de Cubicol (.xls).")
     parser.add_argument("carpeta", help="Carpeta con los archivos .xls exportados de Cubicol")
     parser.add_argument("--como-base", action="store_true", help="Crear los estudiantes desde Cubicol (base vacía)")
+    parser.add_argument("--salones-nuevos", action="store_true", help="Agregar los estudiantes de los salones que aún no están en la base")
+    parser.add_argument("--carpetas", nargs="+", help="Cargar solo estas subcarpetas de la carpeta")
+    parser.add_argument("--etiqueta", help="Nombre de la carga en la bitácora")
     args = parser.parse_args()
 
-    r = cargar_carpeta(args.carpeta, como_base=args.como_base)
+    r = cargar_carpeta(args.carpeta, como_base=args.como_base, salones_nuevos=args.salones_nuevos, etiqueta=args.etiqueta, subcarpetas=args.carpetas)
     print(f"Archivos: {r['archivos']} | filas de estudiantes: {r['filas_origen']} | estudiantes enlazados: {r['estudiantes']}")
+    if r.get("nuevos"):
+        print(f"Estudiantes nuevos (salones que no estaban en la base): {r['nuevos']}")
     for criterio, n in r["enlaces"].items():
         print(f"  - enlazados por {criterio}: {n}")
     print(f"Notas válidas: {r['leidas']} | cargadas: {r['cargadas']} | ya estaban: {r['repetidas']} | no cargadas: {r['rechazadas']}")
